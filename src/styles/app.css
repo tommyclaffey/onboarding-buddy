@@ -252,7 +252,7 @@ a:hover { text-decoration: underline; }
 /* ---------- Auth ---------- */
 .auth { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
 .auth .form-side { display: flex; flex-direction: column; justify-content: center; padding: 64px 12%; gap: 20px; }
-.auth .art-side { position: relative; overflow: hidden; background: linear-gradient(160deg, #FFF6D6, #E8F2FF); display: flex; align-items: flex-end; padding: 56px; }
+.auth .art-side { position: relative; overflow: hidden; background: var(--bg-inverse); display: flex; align-items: flex-end; padding: 56px; }
 
 /* ---------- Utilities ---------- */
 .row { display: flex; align-items: center; gap: 12px; }

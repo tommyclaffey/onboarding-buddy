@@ -53,5 +53,5 @@ export function startServer({ port = 0, db = openDb(defaultDbPath()), dist = pat
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const port = Number(process.env.PORT || 4600);
-  startServer({ port }).then(({ port: p }) => console.log(`Onboarding Buddy API on http://127.0.0.1:${p}`));
+  startServer({ port }).then(({ port: p }) => console.log(`Onboarding Buddy listening on port ${p}`));
 }

@@ -61,7 +61,7 @@ export default function Login() {
       </div>
       <div className="art-side" aria-hidden>
         <img src="/photos/video-welcome.jpg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(16,14,13,0) 40%, rgba(16,14,13,.78) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(16,14,13,0) 30%, rgba(16,14,13,.62) 62%, rgba(16,14,13,.9) 100%)' }} />
         <div style={{ position: 'relative', color: '#fff', maxWidth: 440 }}>
           <p className="t-m" style={{ color: '#fff' }}>“We’re so glad you said yes. Here’s what the next few weeks look like.”</p>
           <p className="t-label mt-8" style={{ color: '#fff' }}>Lena Ortiz, co-founder</p>
