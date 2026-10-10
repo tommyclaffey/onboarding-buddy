@@ -1,0 +1,59 @@
+/* Design tokens, exported from the Figma variables (file ZK9Tsyhq6Y4YytTpLWvh6U). Do not invent new colours here. */
+:root {
+  /* Surfaces */
+  --bg-canvas: #F8F5F0;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F3EFE9;
+  --bg-neutral: #F1F0EC;
+  --bg-sidebar: #F7F6F3;
+  --bg-inverse: #1A1816;
+  --bg-disabled: #E7E3DD;
+
+  /* Brand: yellow = logo and "what's current" (surfaces only). Blue = action. */
+  --bg-highlight: #FFC83D;
+  --bg-highlight-soft: #FFF6D6;
+  --text-highlight: #7A5600;
+  --bg-primary: #1D4F91;
+  --bg-primary-hover: #173F75;
+  --bg-primary-pressed: #112F57;
+  --bg-sky: #7FB5F5;
+  --text-sky: #1D4F91;
+
+  /* Tints (icons and avatars rotate sky → butter → peach → mint) */
+  --tint-sky: #E8F2FF;
+  --tint-butter: #FFF6D6;
+  --tint-peach: #FBEDE5;
+  --tint-sage: #EBF2E7;
+
+  /* Text */
+  --text-primary: #1A1816;
+  --text-secondary: #5F5A54;
+  --text-on-pastel: #3A3631;
+  --text-inverse: #FFFFFF;
+  --text-disabled: #7A746D;
+
+  /* Status */
+  --bg-danger-soft: #FDECEA;
+  --text-danger: #B42318;
+  --bg-success-soft: #E6F3EA;
+  --text-success: #1E6B3F;
+
+  /* Borders */
+  --border-default: #E6E0D6;
+  --border-strong: #1A1816;
+  --border-input: #8C867E;
+  --border-hover: #3A3631;
+  --border-focus: #1D4F91;
+
+  /* Spacing and radius */
+  --s-2xs: 4px; --s-xs: 8px; --s-sm: 12px; --s-md: 16px; --s-lg: 20px; --s-xl: 24px; --s-2xl: 32px; --s-3xl: 40px; --s-4xl: 48px;
+  --r-sm: 10px; --r-md: 16px; --r-lg: 24px; --r-xl: 32px; --r-full: 999px;
+
+  /* Elevation */
+  --shadow-soft: 0 1px 2px rgba(26, 23, 20, .04), 0 8px 24px rgba(26, 23, 20, .06);
+
+  /* Type */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Figtree', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+}
