@@ -3,6 +3,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { useApi } from '../lib/useApi';
+import { api } from '../api';
 import { Avatar, Smiley } from './ui';
 import { Icon } from './Icons';
 import { shortDate } from '../lib/format';
@@ -125,18 +126,11 @@ export function Page({ crumbs, kicker, title, lede, aside, children, admin, glow
   );
 }
 
-const FAQ: [RegExp, string][] = [
-  [/w-?4|tax/i, 'A W-4 tells payroll how much federal tax to hold back from each paycheck. Yours takes about 4 more minutes, and only you and People Ops can see it.'],
-  [/park|office|address/i, 'Brightside is remote-first. If you visit the office, there’s free parking in the garage on 5th; ask Sam for the door code.'],
-  [/team|who/i, 'You’re joining the Design team: Jordan is your manager and Sam is your buddy. See everyone on Your people.'],
-  [/laptop|gear|computer/i, 'Your laptop ships before Day One. Track it on Tools & access; Dev in IT can help if anything’s missing.'],
-  [/slack|notion|linear|app/i, 'Each tool has its own walkthrough with short videos and 3 things to try. You’ll find them in Training.'],
-];
-
-/** Ask Buddy: a pinned bar. This build answers from a small set of company FAQs; anything else points to People Ops. */
 export function AskBuddy() {
+  const { org } = useAuth();
   const [q, setQ] = useState('');
-  const [answer, setAnswer] = useState<string | null>(null);
+  const [answer, setAnswer] = useState<{ text: string; source: string; error?: boolean } | null>(null);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'j') { e.preventDefault(); document.getElementById('ask')?.focus(); }
@@ -145,25 +139,35 @@ export function AskBuddy() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
-  const ask = (text: string) => {
-    const hit = FAQ.find(([re]) => re.test(text));
-    setAnswer(hit ? hit[1] : 'I don’t know that one yet. Priya in People Ops can help: message her from Your people.');
+  const ask = async (text: string) => {
+    if (!text.trim() || busy) return;
+    setBusy(true);
+    setAnswer({ text: 'Thinking…', source: 'pending' });
+    try {
+      const r = await api.post<{ answer: string; source: string }>('/api/buddy/ask', { question: text });
+      setAnswer({ text: r.answer, source: r.source });
+    } catch (e) {
+      setAnswer({ text: (e as Error).message, source: 'error', error: true });
+    } finally {
+      setBusy(false);
+    }
   };
   return (
     <>
       {answer && (
-        <div className="ask-panel" role="dialog" aria-label="Buddy’s answer">
-          <div className="row top gap-12"><Smiley size={28} /><p className="t-body grow">{answer}</p>
+        <div className="ask-panel" role="dialog" aria-label="Buddy’s answer" aria-live="polite">
+          <div className="row top gap-12"><Smiley size={28} /><p className={`t-body grow ${answer.error ? 'danger' : ''}`} style={{ whiteSpace: 'pre-wrap' }}>{answer.text}</p>
             <button className="link-btn" onClick={() => setAnswer(null)}>Close</button></div>
-          <div className="row wrap gap-8">{['What’s a W-4?', 'Who’s on my team?', 'When does my laptop arrive?'].map((s) => <button key={s} className="chip" onClick={() => { setQ(s); ask(s); }}>{s}</button>)}</div>
+          {answer.source === 'ai' && <p className="t-label muted">Answered from {org?.name || 'your company'}’s handbook and your journey. Check anything important with People Ops.</p>}
+          <div className="row wrap gap-8">{['What’s a W-4?', 'Who’s on my team?', 'When does my laptop arrive?'].map((s) => <button key={s} className="chip" disabled={busy} onClick={() => { setQ(s); ask(s); }}>{s}</button>)}</div>
         </div>
       )}
-      <form className="ask-bar" onSubmit={(e) => { e.preventDefault(); if (q.trim()) ask(q); }} role="search">
+      <form className="ask-bar" onSubmit={(e) => { e.preventDefault(); ask(q); }} role="search">
         <Smiley size={36} />
         <label className="sr-only" htmlFor="ask">Ask Buddy</label>
-        <input id="ask" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ask Buddy anything…" onFocus={() => !answer && setAnswer(null)} />
+        <input id="ask" value={q} maxLength={500} onChange={(e) => setQ(e.target.value)} placeholder="Ask Buddy anything…" />
         <span className="kbd">⌘J</span>
-        <button className="send" aria-label="Ask"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+        <button className="send" aria-label="Ask" disabled={busy}>{busy ? <span className="spin" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #fff', borderRightColor: 'transparent', animation: 'spin .8s linear infinite' }} /> : <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 13V3M3.5 7.5 8 3l4.5 4.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>}</button>
       </form>
     </>
   );

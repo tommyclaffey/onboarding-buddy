@@ -1,5 +1,6 @@
 // New-hire endpoints. Every query is scoped to user.org_id; hires only ever see their own tasks.
 import { DOCS, FORMS, appInfo } from '../catalog.mjs';
+import { askClaude, faqAnswer, takeQuota } from '../buddy.mjs';
 import { json, now, tx } from '../db.mjs';
 import { fail, int } from '../http.mjs';
 import {
@@ -229,6 +230,26 @@ export default function registerHire(router) {
     if (text.length > 1000) fail(422, 'Keep it under 1,000 characters.', { field: 'body' });
     addMessage(db, user.org_id, to.id, { from: user.id, kind: 'note', title: `Message from ${user.name.split(' ')[0]}`, body: text, link: '/inbox' });
     return { ok: true, to: to.name.split(' ')[0] };
+  });
+
+  // Ask Buddy. AI answers when a key is configured; the FAQ otherwise. Limited per person per day.
+  router.post('/api/buddy/ask', async ({ db, user, body }) => {
+    if (!user) fail(401, 'Sign in to continue.');
+    const q = String(body.question || '').trim();
+    if (!q) fail(422, 'Type a question first.', { field: 'question' });
+    if (q.length > 500) fail(422, 'Keep your question under 500 characters.', { field: 'question' });
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return { answer: faqAnswer(q) || 'I don’t know that one yet. People Ops can help: message them from Your people.', source: 'faq' };
+    }
+    const limit = takeQuota(db, user);
+    if (limit) fail(429, limit);
+    try {
+      const answer = await askClaude(db, user, q);
+      return { answer: answer || 'I’m not sure. People Ops can help with that one.', source: 'ai' };
+    } catch (e) {
+      console.error('Ask Buddy failed:', e.message);
+      return { answer: faqAnswer(q) || 'I can’t answer right now. Try again in a minute, or message People Ops.', source: 'faq' };
+    }
   });
 
   router.post('/api/feeling', ({ db, user, body }) => {

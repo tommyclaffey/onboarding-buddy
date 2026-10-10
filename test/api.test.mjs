@@ -194,3 +194,42 @@ describe('password', () => {
     assert.equal(r.status, 200);
   });
 });
+
+describe('Ask Buddy', () => {
+  it('falls back to the FAQ when no API key is set', async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const s = await session('maya@brightside.test');
+    const r = await s.post('/api/buddy/ask', { question: 'What is a W-4?' });
+    assert.equal(r.body.source, 'faq');
+    assert.match(r.body.answer, /W-4/);
+    assert.equal((await s.post('/api/buddy/ask', { question: '' })).status, 422);
+  });
+  it('asks Claude with only this company’s context, and enforces the daily limit', async () => {
+    const real = globalThis.fetch;
+    let sent;
+    globalThis.fetch = async (url, opts) => {
+      if (String(url).startsWith('https://api.anthropic.com')) { sent = JSON.parse(opts.body); return new Response(JSON.stringify({ content: [{ type: 'text', text: 'Your laptop ships before Day One.' }] }), { status: 200 }); }
+      return real(url, opts);
+    };
+    process.env.ANTHROPIC_API_KEY = 'test-key';
+    process.env.BUDDY_PER_USER = '2';
+    try {
+      const s = await session('sam@brightside.test');
+      const r = await s.post('/api/buddy/ask', { question: 'When does the laptop arrive?' });
+      assert.equal(r.body.source, 'ai');
+      assert.equal(r.body.answer, 'Your laptop ships before Day One.');
+      assert.equal(sent.model, 'claude-haiku-4-5');
+      assert.match(sent.system, /Brightside/);
+      assert.match(sent.system, /Employee handbook/);
+      assert.doesNotMatch(sent.system, /Northwind|Nora/);
+      assert.equal((await s.post('/api/buddy/ask', { question: 'Second?' })).status, 200);
+      const third = await s.post('/api/buddy/ask', { question: 'Third?' });
+      assert.equal(third.status, 429);
+      assert.match(third.body.error, /daily limit/);
+    } finally {
+      globalThis.fetch = real;
+      delete process.env.ANTHROPIC_API_KEY;
+      delete process.env.BUDDY_PER_USER;
+    }
+  });
+});

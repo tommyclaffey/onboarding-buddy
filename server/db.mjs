@@ -59,6 +59,8 @@ const MIGRATIONS = [
   `,
   // v2 (Oct 10): real video links (YouTube, Loom, Vimeo), stored as the embeddable URL.
   `ALTER TABLE videos ADD COLUMN url TEXT;`,
+  // v3 (Oct 10): Ask Buddy usage, for per-person and app-wide daily limits.
+  `CREATE TABLE buddy_usage(day TEXT NOT NULL, org_id INT NOT NULL, user_id INT NOT NULL, count INT NOT NULL DEFAULT 0, PRIMARY KEY(day, user_id));`,
 ];
 
 export const now = () => new Date().toISOString();
