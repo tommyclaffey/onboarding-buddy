@@ -1,6 +1,6 @@
 # Deploying Onboarding Buddy
 
-> ✍️ (C) Written by Claude — Oct 10, 2026. Not deployed yet — this is the plan, same shape as the Clinical Onboarding App on Railway.
+> ✍️ (C) Written by Claude — Oct 10, 2026. **Deployed Oct 10:** https://web-production-082a6.up.railway.app (Railway project `onboarding-buddy`, service `web`, volume at `/data`, vars `DATA_DIR=/data`, `DEMO=1`). Redeploy with `railway up --service web --detach`.
 
 ## What it needs
 - **Node 24+** (uses built-in `node:sqlite`). No other runtime services.
