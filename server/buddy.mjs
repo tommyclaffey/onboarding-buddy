@@ -35,7 +35,7 @@ export function contextFor(db, user) {
     const tasks = hireTasks(db, user);
     for (const s of journeyFor(db, user, tasks)) {
       lines.push(`\nStage ${s.position} "${s.name}" (${s.window}, ${s.state}, ${s.done} of ${s.total} done): ${s.summary}`);
-      for (const t of s.tasks) lines.push(`- ${t.title} · ${t.typeLabel} · owner: ${t.ownerLabel}${t.owner ? ` (${t.owner.name})` : ''} · due ${t.dueDate} · ${t.status === 'done' ? 'done' : t.overdue ? 'overdue' : 'to do'}${t.meta ? ` · ${t.meta}` : ''}`);
+      for (const t of s.tasks) lines.push(`- ${t.title} · ${t.typeLabel} · owner: ${t.ownerLabel}${t.owner ? ` (${t.owner.name})` : ''} · due ${t.dueDate} · ${t.status === 'done' ? 'done' : t.overdue ? 'overdue' : t.dueToday ? 'due today, not overdue' : 'to do'}${t.meta ? ` · ${t.meta}` : ''}`);
     }
   }
   const apps = db.prepare('SELECT * FROM connected_apps WHERE org_id = ?').all(user.org_id);
