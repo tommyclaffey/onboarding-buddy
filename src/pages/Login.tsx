@@ -5,7 +5,7 @@ import { homeFor, useAuth } from '../auth';
 import { Alert, Avatar, Button, Smiley, TextField } from '../components/ui';
 
 const DEMO = [
-  { email: 'maya@brightside.test', name: 'Maya Chen', role: 'New hire', photo: '/photos/maya.jpg' },
+  { email: 'hana@brightside.test', name: 'Hana Liu', role: 'New hire', photo: '/photos/hana.jpg' },
   { email: 'priya@brightside.test', name: 'Priya Rao', role: 'People Ops (admin)', photo: '/photos/priya.jpg' },
   { email: 'jordan@brightside.test', name: 'Jordan Reyes', role: 'Manager', photo: '/photos/jordan.jpg' },
   { email: 'dev@brightside.test', name: 'Dev Okafor', role: 'IT', photo: '/photos/dev.jpg' },

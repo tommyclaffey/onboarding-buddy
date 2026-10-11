@@ -29,7 +29,7 @@ async function session(email) {
 
 describe('auth', () => {
   it('rejects a wrong password with a plain-words message', async () => {
-    const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-OB': '1' }, body: JSON.stringify({ email: 'maya@brightside.test', password: 'nope-nope-nope' }) });
+    const r = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-OB': '1' }, body: JSON.stringify({ email: 'hana@brightside.test', password: 'nope-nope-nope' }) });
     assert.equal(r.status, 401);
     assert.match((await r.json()).error, /don’t match/);
   });
@@ -38,7 +38,7 @@ describe('auth', () => {
     assert.equal(r.status, 403);
   });
   it('never returns password hashes', async () => {
-    const s = await session('maya@brightside.test');
+    const s = await session('hana@brightside.test');
     const me = await s.get('/api/me');
     assert.equal(JSON.stringify(me.body).includes('scrypt'), false);
   });
@@ -50,13 +50,13 @@ describe('org isolation', () => {
     const o = await s.get('/api/admin/overview');
     assert.equal(o.status, 200);
     assert.equal(o.body.hires.length, 0);
-    assert.equal((await s.get(`/api/admin/hires/${ids.maya}`)).status, 404);
+    assert.equal((await s.get(`/api/admin/hires/${ids.hana}`)).status, 404);
     assert.equal((await s.get('/api/admin/journeys/1')).status, 404);
     assert.equal((await s.get('/api/admin/apps/slack')).status, 404);
   });
   it('cannot change another company’s task', async () => {
-    const maya = await session('maya@brightside.test');
-    const task = (await maya.get('/api/today')).body.next[0];
+    const hana = await session('hana@brightside.test');
+    const task = (await hana.get('/api/today')).body.next[0];
     const other = await session('admin@northwind.test');
     assert.equal((await other.post(`/api/tasks/${task.id}/complete`)).status, 404);
   });
@@ -64,14 +64,14 @@ describe('org isolation', () => {
 
 describe('permissions', () => {
   it('a new hire cannot open admin pages', async () => {
-    const s = await session('maya@brightside.test');
+    const s = await session('hana@brightside.test');
     assert.equal((await s.get('/api/admin/overview')).status, 403);
   });
   it('only a task’s owner can complete it', async () => {
-    const maya = await session('maya@brightside.test');
-    const journey = (await maya.get('/api/journey')).body;
+    const hana = await session('hana@brightside.test');
+    const journey = (await hana.get('/api/journey')).body;
     const itTask = journey.stages[0].tasks.find((t) => t.ownerRole === 'it' && t.status !== 'done');
-    assert.equal((await maya.post(`/api/tasks/${itTask.id}/complete`)).status, 403);
+    assert.equal((await hana.post(`/api/tasks/${itTask.id}/complete`)).status, 403);
     const dev = await session('dev@brightside.test');
     assert.equal((await dev.post(`/api/tasks/${itTask.id}/complete`)).status, 200);
   });
@@ -79,7 +79,7 @@ describe('permissions', () => {
 
 describe('W-4 form', () => {
   it('asks for an answer, then saves, then needs the right name to submit', async () => {
-    const s = await session('maya@brightside.test');
+    const s = await session('hana@brightside.test');
     const empty = await s.post('/api/forms/w4', { step: 2 });
     assert.equal(empty.status, 422);
     assert.equal(empty.body.error, 'Pick one answer to continue.');
@@ -88,7 +88,7 @@ describe('W-4 form', () => {
     const wrong = await s.post('/api/forms/w4', { step: 4, typedName: 'Someone Else' });
     assert.equal(wrong.status, 422);
     assert.equal(wrong.body.field, 'typedName');
-    const ok = await s.post('/api/forms/w4', { step: 4, typedName: 'maya chen' });
+    const ok = await s.post('/api/forms/w4', { step: 4, typedName: 'hana liu' });
     assert.equal(ok.body.submitted, true);
     const today = (await s.get('/api/today')).body;
     assert.notEqual(today.now?.ref, 'w4');
@@ -97,7 +97,7 @@ describe('W-4 form', () => {
 
 describe('quiz', () => {
   it('a wrong answer gives a hint, the right one marks the lesson done', async () => {
-    const s = await session('maya@brightside.test');
+    const s = await session('hana@brightside.test');
     const lesson = (await s.get('/api/journey')).body.stages.flatMap((x) => x.tasks).find((t) => t.type === 'video' && t.title === 'Security basics');
     const detail = (await s.get(`/api/tasks/${lesson.id}`)).body;
     const q = detail.questions[0];
@@ -126,8 +126,8 @@ describe('admin', () => {
     assert.equal(bad.body.field, 'title');
     const r = await s.post('/api/admin/task-templates', { stageId: j.stages[2].id, type: 'todo', title: 'Read the design principles', ownerRole: 'hire', dueDay: 2 });
     assert.equal(r.status, 200);
-    const maya = await session('maya@brightside.test');
-    const found = (await maya.get('/api/journey')).body.stages[2].tasks.some((t) => t.title === 'Read the design principles');
+    const hana = await session('hana@brightside.test');
+    const found = (await hana.get('/api/journey')).body.stages[2].tasks.some((t) => t.title === 'Read the design principles');
     assert.ok(found);
   });
 });
@@ -142,10 +142,10 @@ describe('actions', () => {
     assert.ok((await ana.get('/api/inbox')).body.messages.some((m) => m.title.startsWith('A friendly nudge')));
   });
   it('sends a message to a colleague, not to yourself or another company', async () => {
-    const maya = await session('maya@brightside.test');
-    assert.equal((await maya.post('/api/messages', { toId: ids.sam, body: 'Hi Sam!' })).status, 200);
-    assert.equal((await maya.post('/api/messages', { toId: ids.maya, body: 'me' })).status, 422);
-    assert.equal((await maya.post('/api/messages', { toId: 999, body: 'x' })).status, 404);
+    const hana = await session('hana@brightside.test');
+    assert.equal((await hana.post('/api/messages', { toId: ids.sam, body: 'Hi Sam!' })).status, 200);
+    assert.equal((await hana.post('/api/messages', { toId: ids.hana, body: 'me' })).status, 422);
+    assert.equal((await hana.post('/api/messages', { toId: 999, body: 'x' })).status, 404);
   });
   it('invites a new hire with a full journey and validates fields', async () => {
     const s = await session('priya@brightside.test');
@@ -195,8 +195,8 @@ describe('video links', () => {
     assert.equal(ok.body.status, 'published');
     const added = await s.post('/api/admin/apps/slack/videos', { title: 'Huddles', url: 'https://vimeo.com/76979871' });
     assert.equal(added.status, 200);
-    const maya = await session('maya@brightside.test');
-    assert.ok((await maya.get('/api/apps/slack')).body.videos.some((v) => v.title === 'Huddles' && v.url));
+    const hana = await session('hana@brightside.test');
+    assert.ok((await hana.get('/api/apps/slack')).body.videos.some((v) => v.title === 'Huddles' && v.url));
   });
 });
 
@@ -214,7 +214,7 @@ describe('password', () => {
 describe('Ask Buddy', () => {
   it('falls back to the FAQ when no API key is set', async () => {
     delete process.env.ANTHROPIC_API_KEY;
-    const s = await session('maya@brightside.test');
+    const s = await session('hana@brightside.test');
     const r = await s.post('/api/buddy/ask', { question: 'What is a W-4?' });
     assert.equal(r.body.source, 'faq');
     assert.match(r.body.answer, /W-4/);

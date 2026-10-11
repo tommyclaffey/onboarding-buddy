@@ -85,6 +85,17 @@ const MIGRATIONS = [
   // v6 (Oct 10): templates name the buddy with {buddy}, so every hire sees their own buddy (not always "Sam").
   `UPDATE task_templates SET title = replace(title, 'coffee chat with Sam', 'coffee chat with {buddy}');
    UPDATE stages SET summary = replace(summary, 'lunch with Sam', 'lunch with {buddy}');`,
+  // v7 (Oct 11): the demo new hire "Maya Chen" became "Hana Liu" (fresh names per project).
+  // Only touches the Brightside demo org (found by the old demo email), never a real company.
+  `CREATE TEMP TABLE demo_org AS SELECT org_id AS id FROM users WHERE email = 'maya@brightside.test';
+   UPDATE users SET quote = replace(replace(quote, 'Maya Chen', 'Hana Liu'), 'Maya', 'Hana') WHERE org_id IN (SELECT id FROM demo_org);
+   UPDATE messages SET title = replace(replace(title, 'Maya Chen', 'Hana Liu'), 'Maya', 'Hana'), body = replace(replace(body, 'Maya Chen', 'Hana Liu'), 'Maya', 'Hana') WHERE org_id IN (SELECT id FROM demo_org);
+   UPDATE hire_tasks SET data = replace(replace(data, 'Maya Chen', 'Hana Liu'), 'Maya', 'Hana') WHERE data IS NOT NULL AND org_id IN (SELECT id FROM demo_org);
+   UPDATE form_answers SET answers = replace(replace(answers, 'Maya Chen', 'Hana Liu'), 'Maya', 'Hana') WHERE org_id IN (SELECT id FROM demo_org);
+   UPDATE signatures SET typed_name = replace(replace(typed_name, 'Maya Chen', 'Hana Liu'), 'Maya', 'Hana') WHERE org_id IN (SELECT id FROM demo_org);
+   UPDATE videos SET caption = replace(replace(caption, 'Maya Chen', 'Hana Liu'), 'Maya', 'Hana'), title = replace(title, 'Maya', 'Hana') WHERE org_id IN (SELECT id FROM demo_org);
+   UPDATE users SET name = 'Hana Liu', email = 'hana@brightside.test', photo = '/photos/hana.jpg' WHERE email = 'maya@brightside.test';
+   DROP TABLE demo_org;`,
 ];
 
 export const now = () => new Date().toISOString();

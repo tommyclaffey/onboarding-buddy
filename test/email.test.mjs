@@ -67,9 +67,9 @@ const smtpBody = (over = {}) => ({ host: 'smtp.fake.test', port: smtp.address().
 
 describe('email permissions', () => {
   it('only admins can see or change email settings', async () => {
-    const maya = await session('maya@brightside.test');
-    assert.equal((await maya.get('/api/admin/email')).status, 403);
-    assert.equal((await maya.post('/api/admin/email/smtp', smtpBody())).status, 403);
+    const hana = await session('hana@brightside.test');
+    assert.equal((await hana.get('/api/admin/email')).status, 403);
+    assert.equal((await hana.post('/api/admin/email/smtp', smtpBody())).status, 403);
   });
 });
 

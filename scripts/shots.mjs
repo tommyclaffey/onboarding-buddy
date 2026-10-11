@@ -9,7 +9,7 @@ const BASE = process.argv[2] ?? 'http://127.0.0.1:4600';
 const OUT = process.argv[3] ?? '/tmp/ob-shots';
 const PROBE = readFileSync(new URL('./contrast-probe.js', import.meta.url), 'utf8');
 const WIDTHS = (process.env.WIDTHS ?? '1440').split(',').map(Number);
-const AS = process.env.AS ?? 'maya@brightside.test';
+const AS = process.env.AS ?? 'hana@brightside.test';
 const SCREENS = (process.env.SCREENS ?? '/today,/journey').split(',');
 mkdirSync(OUT, { recursive: true });
 

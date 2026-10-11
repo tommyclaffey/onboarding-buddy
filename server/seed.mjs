@@ -1,5 +1,5 @@
 // Demo company "Brightside" with the cast from the Figma design. Dates are relative to today:
-// Maya starts on the Monday at least 7 days away, so the story always reads "starts Monday".
+// Hana starts on the Monday at least 7 days away, so the story always reads "starts Monday".
 //   node server/seed.mjs            → wipe and reseed
 //   node server/seed.mjs --if-empty → seed only if there's no data (production first boot)
 import fs from 'node:fs';
@@ -18,7 +18,7 @@ function nextMondayAtLeast(days) {
 
 export async function seed(db) {
   const pw = await hashPassword(SEED_PASSWORD);
-  const mayaStart = nextMondayAtLeast(7);
+  const hanaStart = nextMondayAtLeast(7);
   return tx(db, () => {
     const org = Number(db.prepare('INSERT INTO orgs(name, slug, created_at) VALUES (?,?,?)').run('Brightside', 'brightside', now()).lastInsertRowid);
     const U = {};
@@ -33,7 +33,7 @@ export async function seed(db) {
     addUser('dev', { email: 'dev@brightside.test', name: 'Dev Okafor', title: 'IT Lead', team: 'IT', photo: '/photos/dev.jpg', duty: 'it' });
     addUser('jordan', { email: 'jordan@brightside.test', name: 'Jordan Reyes', title: 'Design Lead', team: 'Design', photo: '/photos/jordan.jpg' });
     addUser('sam', { email: 'sam@brightside.test', name: 'Sam Patel', title: 'Product Designer', team: 'Design', photo: '/photos/sam.jpg',
-      quote: 'Hey Maya! I’m your person for anything, big or small. Nothing is too basic to ask. Let’s grab coffee on Tuesday and I’ll show you around.',
+      quote: 'Hey Hana! I’m your person for anything, big or small. Nothing is too basic to ask. Let’s grab coffee on Tuesday and I’ll show you around.',
       ask: ['Figma tricks', 'Design crits', 'The café downstairs', 'Where things live'] });
     addUser('lena', { email: 'lena@brightside.test', name: 'Lena Ortiz', title: 'Co-founder', team: 'Leadership', photo: '/photos/lena.jpg' });
     addUser('dana', { email: 'dana@brightside.test', name: 'Dana Kim', title: 'Security Lead', team: 'IT', photo: '/photos/dana.jpg' });
@@ -143,17 +143,17 @@ export async function seed(db) {
       db.prepare('UPDATE users SET manager_id = ?, buddy_id = ?, journey_id = ? WHERE id = ?').run(U.jordan, U.sam, j, U[key]);
       instantiateTasks(db, db.prepare('SELECT * FROM users WHERE id = ?').get(U[key]));
     };
-    addHire('maya', 'Maya Chen', 'Product Designer', 'Design', '/photos/maya.jpg', mayaStart, 'maya@brightside.test');
+    addHire('hana', 'Hana Liu', 'Product Designer', 'Design', '/photos/hana.jpg', hanaStart, 'hana@brightside.test');
     addHire('ana', 'Ana Ruiz', 'Account Executive', 'Sales', '/photos/ana-ruiz.jpg', addDays(todayIso(), -3), 'ana@brightside.test');
-    addHire('theo', 'Theo Park', 'Software Engineer', 'Engineering', '/photos/theo.jpg', addDays(mayaStart, 7), 'theo@brightside.test');
-    addHire('lina', 'Lina Haddad', 'Support Specialist', 'Support', '/photos/lina.jpg', addDays(mayaStart, 14), 'lina@brightside.test');
+    addHire('theo', 'Theo Park', 'Software Engineer', 'Engineering', '/photos/theo.jpg', addDays(hanaStart, 7), 'theo@brightside.test');
+    addHire('lina', 'Lina Haddad', 'Support Specialist', 'Support', '/photos/lina.jpg', addDays(hanaStart, 14), 'lina@brightside.test');
     const done = (hire, keys, byKey) => {
       for (const k of keys) db.prepare("UPDATE hire_tasks SET status = 'done', done_at = ?, done_by = ? WHERE hire_id = ? AND template_id = ?")
         .run(new Date(Date.now() - Math.random() * 6 * 864e5).toISOString(), byKey ? U[byKey] : U[hire], U[hire], T[k]);
     };
-    done('maya', ['welcome', 'photo', 'emergency'], 'maya');
-    done('maya', ['bg', 'offer'], 'priya'); done('maya', ['laptop', 'accounts'], 'dev'); done('maya', ['plan', 'book11'], 'jordan'); done('maya', ['hellovid', 'buddycoffee'], 'sam');
-    db.prepare('INSERT INTO form_answers(hire_id,org_id,form_key,step,answers,updated_at) VALUES (?,?,?,?,?,?)').run(U.maya, org, 'w4', 2, JSON.stringify({ 1: 'single' }), now());
+    done('hana', ['welcome', 'photo', 'emergency'], 'hana');
+    done('hana', ['bg', 'offer'], 'priya'); done('hana', ['laptop', 'accounts'], 'dev'); done('hana', ['plan', 'book11'], 'jordan'); done('hana', ['hellovid', 'buddycoffee'], 'sam');
+    db.prepare('INSERT INTO form_answers(hire_id,org_id,form_key,step,answers,updated_at) VALUES (?,?,?,?,?,?)').run(U.hana, org, 'w4', 2, JSON.stringify({ 1: 'single' }), now());
     done('ana', ['welcome', 'photo', 'emergency', 'w4', 'deposit', 'handbook', 'coffee', 'i91', 'notion', 'teamintro'], 'ana');
     done('ana', ['bg', 'offer'], 'priya'); done('ana', ['laptop', 'accounts', 'figma'], 'dev'); done('ana', ['plan', 'book11', 'first11'], 'jordan'); done('ana', ['hellovid', 'buddycoffee'], 'sam');
     done('theo', ['bg', 'offer'], 'priya'); done('theo', ['welcome'], 'theo');
@@ -161,15 +161,15 @@ export async function seed(db) {
     // Inbox + feelings
     const msg = (to, from, kind, title, body, link, action, hoursAgo) => db.prepare('INSERT INTO messages(org_id,user_id,from_id,kind,title,body,link,needs_action,created_at) VALUES (?,?,?,?,?,?,?,?,?)')
       .run(org, U[to], from ? U[from] : null, kind, title, body, link, action ? 1 : 0, new Date(Date.now() - hoursAgo * 36e5).toISOString());
-    msg('maya', 'priya', 'nudge', 'Your W-4 is due today', 'You’re halfway there. It takes about 4 more minutes.', '/today', 1, 2);
-    msg('maya', 'dev', 'gear', 'Your laptop has shipped', 'It should arrive by Wednesday. Track it on Tools & access.', '/tools', 0, 20);
-    msg('maya', 'jordan', 'note', 'A note from Jordan', 'So excited you’re joining. I’ve written your 30-60-90 plan; we’ll go through it together on Monday.', '/journey', 0, 30);
-    msg('maya', 'sam', 'note', 'Coffee on Tuesday?', 'I booked us a table at the café downstairs at 10. My treat.', '/people', 0, 44);
-    msg('maya', null, 'system', 'Welcome to Onboarding Buddy', 'Everything you need before Day 1, one step at a time.', '/welcome', 0, 72);
+    msg('hana', 'priya', 'nudge', 'Your W-4 is due today', 'You’re halfway there. It takes about 4 more minutes.', '/today', 1, 2);
+    msg('hana', 'dev', 'gear', 'Your laptop has shipped', 'It should arrive by Wednesday. Track it on Tools & access.', '/tools', 0, 20);
+    msg('hana', 'jordan', 'note', 'A note from Jordan', 'So excited you’re joining. I’ve written your 30-60-90 plan; we’ll go through it together on Monday.', '/journey', 0, 30);
+    msg('hana', 'sam', 'note', 'Coffee on Tuesday?', 'I booked us a table at the café downstairs at 10. My treat.', '/people', 0, 44);
+    msg('hana', null, 'system', 'Welcome to Onboarding Buddy', 'Everything you need before Day 1, one step at a time.', '/welcome', 0, 72);
     msg('priya', 'dev', 'note', 'Linear for Engineering is still missing', 'Theo starts soon and the Engineering walkthrough isn’t recorded.', '/admin/apps/linear', 1, 5);
-    db.prepare('INSERT INTO feelings(org_id,hire_id,value,created_at) VALUES (?,?,?,?)').run(org, U.maya, 4, now());
+    db.prepare('INSERT INTO feelings(org_id,hire_id,value,created_at) VALUES (?,?,?,?)').run(org, U.hana, 4, now());
     db.prepare('INSERT INTO feelings(org_id,hire_id,value,created_at) VALUES (?,?,?,?)').run(org, U.ana, 5, now());
-    return { org, users: U, mayaStart };
+    return { org, users: U, hanaStart };
   });
 }
 
@@ -193,6 +193,6 @@ if (process.argv[1] && import.meta.url.endsWith(process.argv[1].split('/').pop()
   }
   const db = openDb(file);
   const r = await seed(db);
-  console.log(`Seeded Brightside. Maya starts ${r.mayaStart}. Password for every login: ${SEED_PASSWORD}`);
-  console.log('Logins: maya@ (new hire) · priya@ (People Ops admin) · jordan@ (manager) · dev@ (IT) · sam@ (buddy)  — all @brightside.test');
+  console.log(`Seeded Brightside. Hana starts ${r.hanaStart}. Password for every login: ${SEED_PASSWORD}`);
+  console.log('Logins: hana@ (new hire) · priya@ (People Ops admin) · jordan@ (manager) · dev@ (IT) · sam@ (buddy)  — all @brightside.test');
 }
