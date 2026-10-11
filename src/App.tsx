@@ -24,6 +24,8 @@ import AppDetail from './pages/admin/AppDetail';
 import Videos from './pages/admin/Videos';
 import MyTasks from './pages/owner/MyTasks';
 import Account from './pages/Account';
+import Invite from './pages/Invite';
+import EmailSettings from './pages/admin/EmailSettings';
 
 function Guard({ roles, children, ask }: { roles?: Role[]; children: ReactNode; ask?: boolean }) {
   const { user, ready } = useAuth();
@@ -46,6 +48,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/invite/:token" element={<Invite />} />
       <Route path="/welcome" element={<Guard roles={H} ask><Welcome /></Guard>} />
       <Route path="/today" element={<Guard roles={H} ask><Today /></Guard>} />
       <Route path="/journey" element={<Guard roles={H} ask><Journey /></Guard>} />
@@ -65,6 +68,7 @@ export default function App() {
       <Route path="/admin/apps" element={<Guard roles={A}><Apps /></Guard>} />
       <Route path="/admin/apps/:key" element={<Guard roles={A}><AppDetail /></Guard>} />
       <Route path="/admin/videos" element={<Guard roles={A}><Videos /></Guard>} />
+      <Route path="/admin/settings/email" element={<Guard roles={A}><EmailSettings /></Guard>} />
       <Route path="*" element={ready ? <Navigate to={homeFor(user)} replace /> : <div className="loading">Loading…</div>} />
     </Routes>
   );

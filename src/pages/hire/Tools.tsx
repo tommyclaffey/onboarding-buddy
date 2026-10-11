@@ -78,7 +78,7 @@ export default function Tools() {
   return (
     <Page crumbs={[{ label: 'Onboarding' }, { label: 'Tools & access' }]} kicker="Tools & access"
       title={<>Your gear and <em>logins.</em></>}
-      lede="Everything you’ll need on Day One, and where each piece is right now."
+      lede="Everything you’ll need on Day 1, and where each piece is right now."
       aside={aside}>
       {laptop && (
         <div className="hero-card sky" style={{ color: 'var(--text-primary)' }}>
@@ -88,7 +88,7 @@ export default function Tools() {
             <div className="grow">
               <h2 className="t-m">Your laptop · {headline}</h2>
               <p className="t-body muted" style={{ marginTop: 4 }}>
-                {expected && !delivered ? `${longDate(expected)}, by end of day · ships to your home` : shippedOn ? `Shipped ${shortDate(shippedOn)} · ready for Day One` : `IT is getting it ready · ships to your home`}
+                {expected && !delivered ? `${longDate(expected)}, by end of day · ships to your home` : shippedOn ? `Shipped ${shortDate(shippedOn)} · ready for Day 1` : `IT is getting it ready · ships to your home`}
               </p>
             </div>
           </div>
@@ -125,7 +125,7 @@ export default function Tools() {
             })}
           </div>
         ) : <EmptyState emoji="🔑" title="No accounts to set up.">{it?.first || 'IT'} will add anything you need.</EmptyState>}
-        <p className="t-label muted">Anything still being set up is due by Day One, {longDate(startDate)}.</p>
+        <p className="t-label muted">Anything still being set up is due by Day 1, {longDate(startDate)}.</p>
       </section>
 
       <Hairline />

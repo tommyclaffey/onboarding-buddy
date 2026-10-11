@@ -74,8 +74,8 @@ export async function seed(db) {
       S[k] = Number(db.prepare('INSERT INTO stages(org_id,journey_id,position,name,emoji,tint,window,summary,start_day,end_day,intro_video_id) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
         .run(org, j, pos, name, emoji, tint, win, summary, startDay, endDay, intro).lastInsertRowid);
     };
-    addStage('hello', 1, 'Hello!', '👋', 'butter', 'Offer accepted → Day One', 'Get set up before Day One: paperwork, your gear, and meeting your buddy.', -30, -1, V.welcome);
-    addStage('dayone', 2, 'Day One', '☀️', 'sky', 'Monday, first day', 'Your first day. Laptop on, logins working, lunch with Sam.', 0, 0, V.dayone);
+    addStage('hello', 1, 'Hello!', '👋', 'butter', 'Offer accepted → Day 1', 'Get set up before Day 1: paperwork, your gear, and meeting your buddy.', -30, -1, V.welcome);
+    addStage('dayone', 2, 'Day 1', '☀️', 'sky', 'Monday, first day', 'Your first day. Laptop on, logins working, lunch with {buddy}.', 0, 0, V.dayone);
     addStage('week', 3, 'Find Your Feet', '👟', 'peach', 'Days 1 to 5', 'Week 1. Short trainings, your tools, and a first small win.', 1, 5, V.week);
     addStage('stride', 4, 'Hit Your Stride', '🚀', 'sage', 'Days 30 to 90', 'Days 30 to 90. Real projects and regular check-ins with Jordan.', 30, 89, V.stride);
     addStage('did', 5, 'You Did It', '🎓', 'butter', 'Day 90', 'Graduation. Celebrate, share feedback, and maybe become someone’s buddy.', 90, 90, V.founders);
@@ -91,14 +91,14 @@ export async function seed(db) {
     task('hello', 'w4', 'form', 'Fill in your W-4', 'Federal tax form · about 5 min · private to you and HR', '📝', 'hire', -9, 'w4');
     task('hello', 'deposit', 'todo', 'Set up direct deposit', 'Form · about 3 min', '🏦', 'hire', -7, 'direct_deposit');
     task('hello', 'handbook', 'sign', 'Read and sign the handbook', 'Read and sign · about 15 min', '✍️', 'hire', -5, 'handbook');
-    task('hello', 'coffee', 'meeting', 'Book a coffee chat with Sam', 'Your buddy · 30 min', '☕', 'hire', -3);
-    task('hello', 'i91', 'todo', 'Fill in I-9 Section 1', 'Form · by the end of Day One', '🪪', 'hire', 0, 'i9-1');
+    task('hello', 'coffee', 'meeting', 'Book a coffee chat with {buddy}', 'Your buddy · 30 min', '☕', 'hire', -3);
+    task('hello', 'i91', 'todo', 'Fill in I-9 Section 1', 'Form · by the end of Day 1', '🪪', 'hire', 0, 'i9-1');
     task('hello', 'bg', 'todo', 'Run background check', 'People Ops', '🔍', 'people_ops', -20);
     task('hello', 'offer', 'todo', 'Send offer letter for e-signature', 'People Ops', '📨', 'people_ops', -25);
     task('hello', 'laptop', 'it', 'Ship laptop', 'IT request · ships to their home', '💻', 'it', -10);
     task('hello', 'accounts', 'it', 'Create Google and Slack accounts', 'IT request', '🔑', 'it', -9);
     task('hello', 'figma', 'it', 'Create Figma seat', 'IT request', '🎨', 'it', 0);
-    task('hello', 'plan', 'todo', 'Write the 30-60-90 plan', 'To-do · shared with them on Day One', '🗺️', 'manager', -10);
+    task('hello', 'plan', 'todo', 'Write the 30-60-90 plan', 'To-do · shared with them on Day 1', '🗺️', 'manager', -10);
     task('hello', 'book11', 'meeting', 'Book the first 1:1', 'Meeting · 45 min', '📅', 'manager', -7);
     task('hello', 'hellovid', 'todo', 'Record a hello video', 'Video · about a minute', '🎥', 'buddy', -6);
     task('hello', 'buddycoffee', 'meeting', 'Book a coffee chat', 'Meeting · 30 min', '☕', 'buddy', -4);
@@ -165,7 +165,7 @@ export async function seed(db) {
     msg('maya', 'dev', 'gear', 'Your laptop has shipped', 'It should arrive by Wednesday. Track it on Tools & access.', '/tools', 0, 20);
     msg('maya', 'jordan', 'note', 'A note from Jordan', 'So excited you’re joining. I’ve written your 30-60-90 plan; we’ll go through it together on Monday.', '/journey', 0, 30);
     msg('maya', 'sam', 'note', 'Coffee on Tuesday?', 'I booked us a table at the café downstairs at 10. My treat.', '/people', 0, 44);
-    msg('maya', null, 'system', 'Welcome to Onboarding Buddy', 'Everything you need before Day One, one step at a time.', '/welcome', 0, 72);
+    msg('maya', null, 'system', 'Welcome to Onboarding Buddy', 'Everything you need before Day 1, one step at a time.', '/welcome', 0, 72);
     msg('priya', 'dev', 'note', 'Linear for Engineering is still missing', 'Theo starts soon and the Engineering walkthrough isn’t recorded.', '/admin/apps/linear', 1, 5);
     db.prepare('INSERT INTO feelings(org_id,hire_id,value,created_at) VALUES (?,?,?,?)').run(org, U.maya, 4, now());
     db.prepare('INSERT INTO feelings(org_id,hire_id,value,created_at) VALUES (?,?,?,?)').run(org, U.ana, 5, now());

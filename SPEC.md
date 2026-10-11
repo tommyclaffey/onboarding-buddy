@@ -30,11 +30,16 @@ company's connected apps. A real person is the new hire's buddy.
 | `form_answers` | hire_id, form_key, step, answers (JSON), submitted_at |
 | `messages` | user_id, from_id, kind, title, body, link, created_at, read_at |
 | `feelings` | hire_id, value (1–5), created_at — only admins see these |
+| `email_settings` | org_id, provider (`google`/`microsoft`/`smtp`), from_name, from_address, reply_to, smtp_*, secret_enc (encrypted), connected_by, last test |
+| `invites` | token_hash, user_id, expires_at (14 days), used_at, sent_via, sent_at — single use |
+| `email_log` | to, subject, kind (`invite`/`test`), provider, status (`sent`/`failed`/`not_sent`), error |
+| `oauth_states` | one-time state for Google/Microsoft sign-in, 15 minutes |
 
 - **Task types:** `form`, `sign`, `video`, `app`, `todo`, `meeting`, `it`
 - **Owner roles:** `hire`, `people_ops`, `it`, `manager`, `buddy`. Resolved per hire: people_ops and it come from org admins/members flagged in `users.team`, manager and buddy from the hire's row.
-- **Due dates:** `start_date + due_day` (Day −7 = a week before Day One).
-- **Sensitive data:** the W-4 stores only the choices needed to show progress (filing situation). No SSNs, no ID documents (open decision: hand those to a payroll provider).
+- **Due dates:** `start_date + due_day` (Day −7 = a week before Day 1).
+- **Sensitive data (decided Oct 10: keep it in the app).** Today the W-4 stores only filing choices; no SSNs, no bank numbers, no ID documents yet. **Before any of those are stored:** encrypt the fields (`server/secrets.mjs` already does AES-256-GCM), limit reads to People Ops and the hire, log every view, and set a deletion rule.
+- **Names in templates:** `{buddy}` in a task title, meta or stage summary becomes the hire's own buddy's first name.
 
 ## 3. App catalogue (code, not DB)
 `server/catalog.mjs` — key, name, category, tint token, three feature icons. Logos are the official
@@ -48,11 +53,16 @@ files in `public/logos/`, shown at uniform scale on a white tile, never recolour
 - Owners (manager / IT / buddy / People Ops): `GET /api/my-tasks` · complete/undo as above (only tasks they own)
 - Admin: `GET /api/admin/overview` · `GET /api/admin/hires/:id` · `GET /api/admin/journeys/:id` · `POST/PATCH/DELETE /api/admin/task-templates`
   · `GET /api/admin/apps` · `GET /api/admin/apps/:key` · `PATCH /api/admin/apps/:key` · `GET /api/admin/videos`
+  · `POST /api/admin/hires` (creates the hire, emails the invite) · `POST /api/admin/hires/:id/invite` (new link)
+- Email (admin): `GET/PATCH/DELETE /api/admin/email` · `POST /api/admin/email/smtp` (checks the login before saving) · `POST /api/admin/email/test`
+  · `POST /api/admin/email/connect/:provider` → sign-in URL · `GET /api/oauth/:provider/callback` → back to Settings → Email
+- Public: `GET /api/invite/:token` · `POST /api/invite/:token` (set password, signed in). Setup: `docs/EMAIL.md`
 
 ## 5. Screens (match Figma)
 **New hire:** Welcome (first login) · Today · My journey · Task: W-4 form · Sign the handbook · Lesson (video + quick check) · App walkthrough (standard template) · Tools & access · Inbox · Your people · Graduation
 **Owners:** My tasks (manager, IT, buddy, People Ops)
-**Admin:** Overview · New hire detail · Journey builder · Connected apps · App detail (edit Try it now + house rules) · Video library
+**Admin:** Overview · New hire detail (invite status, resend) · Journey builder · Connected apps · App detail (edit Try it now + house rules) · Video library · Email settings
+**Public:** Sign in · Invite (pick a password)
 
 ## 6. Design rules (from the Figma system)
 - Fraunces (Light/Regular) headings, Figtree body, Geist Mono for counts and times. **No text under 12px.**
@@ -62,4 +72,10 @@ files in `public/logos/`, shown at uniform scale on a white tile, never recolour
 - Contrast: body text ≥ 4.5 : 1, checked.
 - Photos for people only. Apps are shown by their official logo on a white tile over the app's tint.
 - Overdue, missing and errors always say it in words; colour is a second signal.
-- **Numbers as numerals, never words** ("90 days", "5 stages"). Idioms like "one at a time" stay as words.
+- **Numbers as numerals, never words** ("90 days", "5 stages"). Idioms like "one at a time" stay as words. The first day is **"Day 1"** (decided Oct 10), matching Day −7, Day 30, Day 90.
+
+## 7. Decisions log
+- **Oct 10 — Day 1, not Day One.** Matches every other day label and the numerals rule.
+- **Oct 10 — Sensitive forms stay in the app** (not handed to a payroll provider). Guardrails in §2 come first.
+- **Oct 10 — Email: the company's own account.** Google Workspace and Microsoft 365 by sign-in, SMTP for everything else. Nothing connected → admin gets the invite link to share.
+- **Next — connectors that act**, not just training pages: Google/Microsoft (accounts, calendar), Slack (channels, welcome DMs). Order depends on the first real customer's tools.

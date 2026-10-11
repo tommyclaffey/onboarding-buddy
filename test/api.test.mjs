@@ -154,9 +154,25 @@ describe('actions', () => {
     assert.equal(bad.body.field, 'name');
     const ok = await s.post('/api/admin/hires', { name: 'Rae Kim', email: 'rae@brightside.test', title: 'Designer', startDate: '2026-11-02', journeyId: 1, managerId: ids.jordan, buddyId: ids.sam });
     assert.equal(ok.status, 200);
-    assert.ok(ok.body.tempPassword.length >= 10);
-    const login = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-OB': '1' }, body: JSON.stringify({ email: 'rae@brightside.test', password: ok.body.tempPassword }) });
+    // No email connected in tests: nothing is sent, and the admin gets the link to share by hand.
+    assert.equal(ok.body.invite.sent, false);
+    assert.match(ok.body.invite.link, /\/invite\/[\w-]{40,}$/);
+    const token = ok.body.invite.link.split('/invite/')[1];
+    const noPw = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-OB': '1' }, body: JSON.stringify({ email: 'rae@brightside.test', password: '' }) });
+    assert.equal(noPw.status, 400);
+    const info = await (await fetch(base + '/api/invite/' + token)).json();
+    assert.equal(info.first, 'Rae');
+    const accept = (pw) => fetch(base + '/api/invite/' + token, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-OB': '1' }, body: JSON.stringify({ password: pw }) });
+    assert.equal((await accept('short')).status, 422);
+    const ok2 = await accept('rae-picks-a-long-one');
+    assert.equal(ok2.status, 200);
+    assert.ok(ok2.headers.get('set-cookie').includes('ob_session='));
+    assert.equal((await accept('rae-picks-a-long-one')).status, 404, 'links work once');
+    const login = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-OB': '1' }, body: JSON.stringify({ email: 'rae@brightside.test', password: 'rae-picks-a-long-one' }) });
     assert.equal(login.status, 200);
+    const detail = await s.get(`/api/admin/hires/${ok.body.id}`);
+    assert.equal(detail.body.invite.state, 'accepted');
+    assert.equal((await s.post(`/api/admin/hires/${ok.body.id}/invite`)).status, 409);
   });
 });
 

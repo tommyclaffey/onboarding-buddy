@@ -13,5 +13,6 @@ export const Icon = {
   video: () => <svg {...P}><rect x="1.8" y="4" width="10.4" height="10" rx="2" /><path d="m12.2 7.8 4-2.3v7l-4-2.3" /></svg>,
   plug: () => <svg {...P}><path d="M6.2 2v3.4M11.8 2v3.4M4.4 5.4h9.2v2.9a4.6 4.6 0 0 1-9.2 0zM9 12.9V16" /></svg>,
   check: () => <svg {...P}><rect x="2.4" y="2.4" width="13.2" height="13.2" rx="3" /><path d="m5.8 9.2 2.2 2.1 4.3-4.6" /></svg>,
+  settings: () => <svg {...P}><circle cx="9" cy="9" r="2.4" /><path d="M9 1.8v2M9 14.2v2M1.8 9h2M14.2 9h2M3.9 3.9l1.4 1.4M12.7 12.7l1.4 1.4M3.9 14.1l1.4-1.4M12.7 5.3l1.4-1.4" /></svg>,
   search: () => <svg {...P}><circle cx="8" cy="8" r="5" /><path d="m11.8 11.8 3.6 3.6" /></svg>,
 };

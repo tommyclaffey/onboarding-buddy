@@ -62,7 +62,7 @@ export default function Welcome() {
       <div className="row gap-16">
         <div className="cal-tile" aria-hidden><div className="mon">{cal.mon}</div><div className="t-m" style={{ padding: '4px 0 6px' }}>{cal.day}</div></div>
         <div className="col gap-2">
-          <Caps>Day One</Caps>
+          <Caps>Day 1</Caps>
           <p className="t-h-l">{days == null ? longDate(data.startDate) : days === 0 ? 'It’s today!' : `${days} ${days === 1 ? 'day' : 'days'} to go`}</p>
           <p className="t-label muted">{cal.wd} · 9:00 AM · remote</p>
         </div>
@@ -100,7 +100,7 @@ export default function Welcome() {
       </section>
 
       <section className="section">
-        <div className="section-head"><Caps>Before {longDate(data.startDate)}</Caps><span className="t-mono muted">{beforeDayOne} small {beforeDayOne === 1 ? 'task' : 'tasks'} before Day One</span></div>
+        <div className="section-head"><Caps>Before {longDate(data.startDate)}</Caps><span className="t-mono muted">{beforeDayOne} small {beforeDayOne === 1 ? 'task' : 'tasks'} before Day 1</span></div>
         <div className="journey-strip" style={{ gridTemplateColumns: `repeat(${data.stages.length}, 1fr)` }}>
           {data.stages.map((s) => <span key={s.id} className={`bar ${s.state}`} style={{ ['--p' as string]: `${s.total ? (s.done / s.total) * 100 : 0}%` }} title={`${s.name}: ${s.done} of ${s.total} done`} />)}
           {data.stages.map((s) => <span key={`l${s.id}`} className="lbl"><span aria-hidden>{s.emoji}</span>{short(s.name)}</span>)}

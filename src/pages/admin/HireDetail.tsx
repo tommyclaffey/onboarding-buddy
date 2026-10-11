@@ -9,12 +9,12 @@ import { Alert, Avatar, Button, Caps, Hairline, Pill, useToast } from '../../com
 import { dayDate, dueLabel, lateLabel, longDate, relTime, shortDate, todayIso } from '../../lib/format';
 import type { Person, Task } from '../../lib/types';
 import { useApi } from '../../lib/useApi';
-import { FEELING_WORDS, FEELINGS, Note } from './kit';
+import { FEELING_WORDS, FEELINGS, InviteOutcome, Note, type InviteResult } from './kit';
 import { sendNudge } from './Overview';
 
 interface Paper { label: string; detail: string; due?: string | null; status: string }
 interface HireData {
-  hire: Person & { title?: string; team?: string; startDate: string; manager: Person | null; buddy: Person | null };
+  hire: Person & { email: string; title?: string; team?: string; startDate: string; manager: Person | null; buddy: Person | null };
   summary: { status: { tone: string; label: string } };
   now: Task | null;
   stage: { name: string; done: number; total: number };
@@ -23,6 +23,7 @@ interface HireData {
   feeling: { value: number; created_at: string } | null;
   activity: { at: string; text: string }[];
   videos: { done: number; total: number };
+  invite: { state: 'accepted' | 'sent' | 'not_sent' | 'expired'; sentAt?: string | null; via?: string | null };
   checkins?: { title: string; at: string | null; rating: string; notes: string; by: { name: string; first: string } | null }[];
 }
 
@@ -38,6 +39,8 @@ export default function HireDetail() {
   const [msg, setMsg] = useState('');
   const [msgError, setMsgError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [inviting, setInviting] = useState(false);
+  const [invited, setInvited] = useState<InviteResult | null>(null);
 
   if (error) return <Page admin crumbs={[{ label: 'Admin', to: '/admin' }, { label: 'New hire' }]} title="We couldn’t find that person."><Alert tone="error" title="Not found">{error.message}</Alert></Page>;
   if (!data) return <main className="panel"><div className="loading">Loading…</div></main>;
@@ -53,6 +56,17 @@ export default function HireDetail() {
       setNotice({ tone: 'error', title: 'That didn’t save', msg: (e as ApiError).message });
     }
   };
+  const resend = async () => {
+    setInviting(true); setNotice(null); setInvited(null);
+    try { const r = await api.post<{ invite: InviteResult }>(`/api/admin/hires/${hire.id}/invite`); setInvited(r.invite); await reload(); }
+    catch (e) { setNotice({ tone: 'error', title: 'Invite not sent', msg: (e as ApiError).message }); }
+    finally { setInviting(false); }
+  };
+  const VIA: Record<string, string> = { google: 'Google', microsoft: 'Microsoft', smtp: 'company email', app: 'Onboarding Buddy' };
+  const inv = data.invite;
+  const inviteLine = inv.state === 'accepted' ? '✓ Account set up'
+    : inv.state === 'sent' ? `Invite sent ${relTime(inv.sentAt!)}${inv.via ? ` via ${VIA[inv.via] || inv.via}` : ''}`
+    : inv.state === 'expired' ? 'Invite link expired' : 'Invite not emailed yet';
   const nudge = async () => {
     setNudging(true); setNotice(null);
     const r = await sendNudge(hire.id);
@@ -90,7 +104,10 @@ export default function HireDetail() {
           <dt>Starts</dt><dd>{dayDate(hire.startDate)} · 9:00 AM</dd>
           <dt>Manager</dt><dd>{hire.manager?.name || 'Not set'}</dd>
           <dt>Buddy</dt><dd>{hire.buddy?.name || 'Not set'}</dd>
+          <dt>Account</dt><dd><span className={inv.state === 'accepted' ? 'success strong' : inv.state === 'sent' ? '' : 'danger strong'}>{inviteLine}</span></dd>
         </dl>
+        {inv.state !== 'accepted' && <div><Button size="sm" variant="outline" loading={inviting} onClick={resend}>{inv.state === 'not_sent' ? 'Send invite' : 'Send a new invite'}</Button></div>}
+        {invited && <InviteOutcome first={hire.first} email={hire.email} invite={invited} />}
       </div>
       <Hairline />
       <div className="section">

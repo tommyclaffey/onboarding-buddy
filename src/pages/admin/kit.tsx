@@ -1,5 +1,7 @@
 // Small helpers shared by the People Ops and owner screens. Page-local, so shared components stay untouched.
-import type { ReactNode, SelectHTMLAttributes } from 'react';
+import { useState, type ReactNode, type SelectHTMLAttributes } from 'react';
+import { Link } from 'react-router-dom';
+import { Alert, Button } from '../../components/ui';
 import { dayDate, todayIso } from '../../lib/format';
 import type { AppInfo } from '../../lib/types';
 import '../../styles/admin.css';
@@ -60,3 +62,28 @@ export const ChevronDown = () => (
 
 /** The "ⓘ" note line used under tables. */
 export const Note = ({ children }: { children: ReactNode }) => <p className="ad-note"><span className="i" aria-hidden>i</span><span>{children}</span></p>;
+
+/** What the server says after creating or resending an invite. `link` only comes back when the email didn't go out. */
+export interface InviteResult { sent: boolean; via: string | null; error: string | null; link?: string; expiresAt: string }
+const VIA_NAME: Record<string, string> = { google: 'your Google Workspace address', microsoft: 'your Microsoft 365 address', smtp: 'your company email', app: 'Onboarding Buddy' };
+
+/** Sent → success line. Not sent → the reason, plus the link to copy and a pointer to Settings → Email. */
+export function InviteOutcome({ first, email, invite }: { first: string; email: string; invite: InviteResult }) {
+  const [copied, setCopied] = useState(false);
+  if (invite.sent) {
+    return <Alert tone="success" title={`${first}’s invite is on its way.`}>We emailed {email} from {VIA_NAME[invite.via || ''] || 'your email'}. The link works for 14 days.</Alert>;
+  }
+  const copy = async () => { try { await navigator.clipboard.writeText(invite.link || ''); setCopied(true); } catch { /* select-all fallback below */ } };
+  return (
+    <Alert tone="warning" title={`${first}’s account is ready, but no email went out.`}>
+      <span className="col gap-8" style={{ display: 'flex' }}>
+        <span>{invite.error} Send {first} this link yourself. It works for 14 days and only once.</span>
+        <span className="row gap-8" style={{ flexWrap: 'wrap' }}>
+          <span className="ad-secret" style={{ overflowWrap: 'anywhere', fontSize: 13 }}>{invite.link}</span>
+          <Button size="sm" variant="outline" type="button" onClick={copy}>{copied ? '✓ Copied' : 'Copy link'}</Button>
+        </span>
+        <span>To send invites automatically, <Link to="/admin/settings/email">connect your email</Link>.</span>
+      </span>
+    </Alert>
+  );
+}

@@ -127,7 +127,7 @@ export default function Journey() {
   };
 
   const milestones = [
-    { label: 'Day One', iso: data.startDate, color: 'var(--bg-sky)' },
+    { label: 'Day 1', iso: data.startDate, color: 'var(--bg-sky)' },
     { label: 'Day 30 check-in', iso: addDaysIso(data.startDate, 30), color: 'var(--text-highlight)' },
     { label: 'Day 60 check-in', iso: addDaysIso(data.startDate, 60), color: 'var(--bg-primary)' },
     { label: 'Day 90 review', iso: addDaysIso(data.startDate, 90), color: 'var(--text-success)' },

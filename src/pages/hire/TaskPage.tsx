@@ -44,7 +44,7 @@ export function emTitle(text: string, word?: string): ReactNode {
 export const PAPERWORK_REFS = ['emergency', 'direct_deposit', 'i9-1'];
 export const isPaperwork = (t: Task) => t.ownerRole === 'hire' && (t.type === 'form' || t.type === 'sign' || PAPERWORK_REFS.includes(t.ref || ''));
 
-/** The hire's people (buddy, manager, People Ops) and Day One, from /api/today. */
+/** The hire's people (buddy, manager, People Ops) and Day 1, from /api/today. */
 export interface Crew { startDate: string; daysToGo: number; buddy: (Person & { quote?: string }) | null; manager: Person | null; peopleOps: Person | null }
 export const useCrew = () => useApi<Crew>('/api/today').data;
 
@@ -235,7 +235,7 @@ function FormTask({ data }: { data: TaskResp }) {
   );
 
   return (
-    <Page crumbs={[{ label: 'Onboarding', to: '/today' }, { label: 'Paperwork', to: '/paperwork' }, { label: 'W-4' }]} kicker={form.kicker} title={emTitle(form.title)} lede={submitted ? 'All four steps are done. People Ops has your W-4.' : form.lede} aside={aside}>
+    <Page crumbs={[{ label: 'Onboarding', to: '/today' }, { label: 'Paperwork', to: '/paperwork' }, { label: 'W-4' }]} kicker={form.kicker} title={emTitle(form.title)} lede={submitted ? 'All 4 steps are done. People Ops has your W-4.' : form.lede} aside={aside}>
       <div className="col gap-20">
         {strip}
         {submitted ? (
@@ -490,7 +490,7 @@ function LessonTask({ data, reload }: { data: TaskResp; reload: () => void }) {
       <Hairline />
       <div className="section">
         <Caps>Why this one is required</Caps>
-        <p className="t-body">Every new hire does {data.task.title} in their first week. It takes about {mins ? `${mins + 2} minutes` : 'ten minutes'} with the quick check, and it’s the one lesson Brightside asks everyone to repeat each year.</p>
+        <p className="t-body">Every new hire does {data.task.title} in their first week. It takes about {mins ? `${mins + 2} minutes` : '10 minutes'} with the quick check, and it’s the one lesson Brightside asks everyone to repeat each year.</p>
       </div>
     </>
   );
@@ -499,7 +499,7 @@ function LessonTask({ data, reload }: { data: TaskResp; reload: () => void }) {
     <Page crumbs={[{ label: 'Onboarding', to: '/today' }, { label: 'Training', to: '/training' }, { label: data.task.title }]}
       kicker={`Training · ${data.task.title} · Lesson ${lessonNo} of ${Math.max(series.length, 1)}`}
       title={emTitle(v.title, /phish/i.test(v.title) ? 'phishing' : undefined)}
-      lede={`A ${mins ? `${mins}-minute` : 'short'} video, then ${qs.length === 3 ? 'three' : qs.length} quick ${qs.length === 1 ? 'question' : 'questions'}. Get them right and the lesson is marked done.`} aside={aside}>
+      lede={`A ${mins ? `${mins}-minute` : 'short'} video, then ${qs.length} quick ${qs.length === 1 ? 'question' : 'questions'}. Get them right and the lesson is marked done.`} aside={aside}>
       <VideoPlayer video={v} kicker={`Lesson ${lessonNo}`} />
 
       <section className="section">
@@ -556,9 +556,9 @@ function LessonTask({ data, reload }: { data: TaskResp; reload: () => void }) {
    SIMPLE: to-do, meeting, IT request
    ===================================================================================== */
 const GUIDE: Record<string, string> = {
-  emergency: 'Add one or two people we should call if something happens while you’re working. Only People Ops can see them.',
+  emergency: 'Add 1 or 2 people we should call if something happens while you’re working. Only People Ops can see them.',
   direct_deposit: 'Add the bank account your pay goes into. Have your routing and account numbers ready. Brightside’s payroll provider stores them; Onboarding Buddy never does.',
-  'i9-1': 'Section 1 of the I-9 confirms you can work in the US. Fill it in by the end of Day One. People Ops checks your documents within three business days.',
+  'i9-1': 'Section 1 of the I-9 confirms you can work in the US. Fill it in by the end of Day 1. People Ops checks your documents within 3 business days.',
   meeting: 'Pick a time that works for both of you. Once it’s booked, tick it off here.',
   it: 'IT handles this one. It ticks off here as soon as it’s done, and you’ll get a note in your Inbox.',
   todo: 'Tick it off when it’s done. You can undo it if you change your mind.',

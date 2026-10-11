@@ -90,7 +90,7 @@ export default function JourneyBuilder() {
       <Hairline />
       <div className="section">
         <Caps>How due days work</Caps>
-        <p className="t-body">Due days count from Day One. “Day −7” means a week before they start. “Day +3” means their third day. Dates fill in automatically for each new hire.</p>
+        <p className="t-body">Due days count from Day 1. “Day −7” means a week before they start. “Day +3” means their third day. Dates fill in automatically for each new hire. Write {"{buddy}"} in a task name and each hire sees their own buddy’s first name.</p>
       </div>
       <Hairline />
       <div className="section">

@@ -60,6 +60,9 @@ export function instantiateTasks(db, hire) {
   for (const t of tpls) ins.run(hire.org_id, hire.id, t.id);
 }
 
+/** Templates can say {buddy}; each hire sees their own buddy's first name. */
+export const fillNames = (text, buddy) => (text == null ? text : String(text).replace(/\{buddy\}/g, buddy ? buddy.name.split(' ')[0] : 'your buddy'));
+
 /** Everything about one hire's tasks, with owner, due date and status. */
 export function hireTasks(db, hire) {
   const rows = db
@@ -78,7 +81,7 @@ export function hireTasks(db, hire) {
     const due = addDays(hire.start_date, r.due_day);
     const owner = ownerOf(r.owner_role);
     return {
-      id: r.id, templateId: r.template_id, type: r.type, typeLabel: TYPE_LABEL[r.type], title: r.title, meta: r.meta, emoji: r.emoji,
+      id: r.id, templateId: r.template_id, type: r.type, typeLabel: TYPE_LABEL[r.type], title: fillNames(r.title, ownerOf('buddy')), meta: fillNames(r.meta, ownerOf('buddy')), emoji: r.emoji,
       ownerRole: r.owner_role, ownerLabel: OWNER_LABEL[r.owner_role], owner: person(owner), ownerId: owner?.id ?? null,
       dueDay: r.due_day, dueDate: due, status: r.status, doneAt: r.done_at, ref: r.ref,
       overdue: r.status !== 'done' && due < today, dueToday: r.status !== 'done' && due === today,
@@ -92,6 +95,7 @@ export function hireTasks(db, hire) {
 export function journeyFor(db, hire, tasks = hireTasks(db, hire)) {
   const stages = stagesFor(db, hire.org_id, hire.journey_id);
   let currentFound = false;
+  const buddy = ownerFor(db, hire, 'buddy');
   return stages.map((s) => {
     const mine = tasks.filter((t) => t.stageId === s.id);
     const done = mine.filter((t) => t.status === 'done').length;
@@ -100,7 +104,7 @@ export function journeyFor(db, hire, tasks = hireTasks(db, hire)) {
     if (!complete && !currentFound) { state = 'current'; currentFound = true; }
     const apps = mine.filter((t) => t.type === 'app').map((t) => appInfo(t.ref)).filter(Boolean);
     return {
-      id: s.id, position: s.position, name: s.name, emoji: s.emoji, tint: s.tint, window: s.window, summary: s.summary,
+      id: s.id, position: s.position, name: s.name, emoji: s.emoji, tint: s.tint, window: s.window, summary: fillNames(s.summary, buddy),
       opens: addDays(hire.start_date, s.start_day ?? 0), state, total: mine.length, done,
       intro: videoShape(db, hire.org_id, videoById(db, hire.org_id, s.intro_video_id)),
       apps: [...new Map(apps.map((a) => [a.key, a])).values()],

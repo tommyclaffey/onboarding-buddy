@@ -79,7 +79,7 @@ export default function People() {
       <Hairline />
       <section className="section">
         <Caps>A tip from {peopleOps?.first || 'People Ops'}</Caps>
-        <p className="t-body">Watch everyone’s hellos before Day One. It’s much easier to say hi on a call when you already know the face.</p>
+        <p className="t-body">Watch everyone’s hellos before Day 1. It’s much easier to say hi on a call when you already know the face.</p>
       </section>
     </>
   );
@@ -87,7 +87,7 @@ export default function People() {
   return (
     <Page crumbs={[{ label: 'Your people' }]} kicker="Your people"
       title={<>The people <em>in your corner.</em></>}
-      lede="Your buddy, your manager, and the team you’re joining. Everyone recorded a short hello, so you’ll know their faces on Day One."
+      lede="Your buddy, your manager, and the team you’re joining. Everyone recorded a short hello, so you’ll know their faces on Day 1."
       glow={['#FBE3D5', '#DDEBFF']} aside={aside}>
       {buddy && (
         <div className="hero-card peach buddy-hero">

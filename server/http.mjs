@@ -64,6 +64,11 @@ export function readJson(req, limit = JSON_LIMIT) {
   });
 }
 
+/** Return `new Redirect(url)` from a handler to send a 302 (used by OAuth callbacks). */
+export class Redirect {
+  constructor(url) { this.url = url; }
+}
+
 /** Minimal router: `router.get('/api/tasks/:id', handler)`. Handlers get (ctx) and return a body. */
 export class Router {
   constructor() {

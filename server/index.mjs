@@ -4,9 +4,10 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { SESSION_COOKIE, sessionUser } from './auth.mjs';
 import { defaultDbPath, openDb } from './db.mjs';
-import { HttpError, Router, parseCookies, readJson, sendJson } from './http.mjs';
+import { HttpError, Redirect, Router, parseCookies, readJson, sendJson } from './http.mjs';
 import registerAdmin from './routes/admin.mjs';
 import registerAuth from './routes/auth.mjs';
+import registerEmail from './routes/email.mjs';
 import registerHire from './routes/hire.mjs';
 import registerOwner from './routes/owner.mjs';
 import { serveStatic } from './static.mjs';
@@ -21,6 +22,7 @@ export function buildRouter() {
   registerHire(r);
   registerOwner(r);
   registerAdmin(r);
+  registerEmail(r);
   return r;
 }
 
@@ -40,6 +42,10 @@ export function startServer({ port = 0, db = openDb(defaultDbPath()), dist = pat
       const user = sessionUser(db, token);
       const body = WRITES.has(req.method) ? await readJson(req) : {};
       const out = await match.handler({ req, res, db, user, token, params: match.params, body, query: url.searchParams, secure, setCookie: (c) => cookies.push(c) });
+      if (out instanceof Redirect) {
+        res.writeHead(302, { Location: out.url, 'Cache-Control': 'no-store', ...SECURITY, ...(cookies.length ? { 'Set-Cookie': cookies } : {}) });
+        return res.end();
+      }
       sendJson(res, 200, out ?? { ok: true }, { ...SECURITY, ...(cookies.length ? { 'Set-Cookie': cookies } : {}) });
     } catch (e) {
       if (e instanceof HttpError) return sendJson(res, e.status, { error: e.message, ...(e.data || {}) }, SECURITY);

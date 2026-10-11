@@ -61,6 +61,30 @@ const MIGRATIONS = [
   `ALTER TABLE videos ADD COLUMN url TEXT;`,
   // v3 (Oct 10): Ask Buddy usage, for per-person and app-wide daily limits.
   `CREATE TABLE buddy_usage(day TEXT NOT NULL, org_id INT NOT NULL, user_id INT NOT NULL, count INT NOT NULL DEFAULT 0, PRIMARY KEY(day, user_id));`,
+  // v4 (Oct 10): "Day One" became "Day 1" (numbers as numerals). Renames seeded content in place.
+  `UPDATE stages SET name = 'Day 1' WHERE name = 'Day One';
+   UPDATE stages SET window = replace(window, 'Day One', 'Day 1'), summary = replace(summary, 'Day One', 'Day 1');
+   UPDATE task_templates SET title = replace(title, 'Day One', 'Day 1'), meta = replace(meta, 'Day One', 'Day 1');
+   UPDATE messages SET title = replace(title, 'Day One', 'Day 1'), body = replace(body, 'Day One', 'Day 1');`,
+  // v5 (Oct 10): the company's own email (Google, Microsoft or SMTP), invite links, a log of sent email.
+  // Secrets (SMTP password, OAuth tokens) are stored encrypted in secret_enc (server/secrets.mjs).
+  `CREATE TABLE email_settings(
+     org_id INTEGER PRIMARY KEY, provider TEXT NOT NULL CHECK(provider IN ('google','microsoft','smtp')),
+     from_name TEXT, from_address TEXT, reply_to TEXT,
+     smtp_host TEXT, smtp_port INT, smtp_secure INT, smtp_user TEXT, secret_enc TEXT,
+     connected_by INT, connected_at TEXT, last_test_at TEXT, last_test_ok INT, last_error TEXT);
+   CREATE TABLE invites(
+     token_hash TEXT PRIMARY KEY, org_id INT NOT NULL, user_id INT NOT NULL, created_by INT, created_at TEXT,
+     expires_at TEXT NOT NULL, used_at TEXT, sent_via TEXT, sent_at TEXT);
+   CREATE INDEX invites_user ON invites(org_id, user_id);
+   CREATE TABLE oauth_states(state_hash TEXT PRIMARY KEY, org_id INT NOT NULL, user_id INT NOT NULL, provider TEXT NOT NULL, created_at TEXT NOT NULL);
+   CREATE TABLE email_log(
+     id INTEGER PRIMARY KEY, org_id INT NOT NULL, to_addr TEXT NOT NULL, subject TEXT, kind TEXT,
+     provider TEXT, status TEXT NOT NULL CHECK(status IN ('sent','failed','not_sent')), error TEXT, created_at TEXT);
+   CREATE INDEX email_log_org ON email_log(org_id, created_at);`,
+  // v6 (Oct 10): templates name the buddy with {buddy}, so every hire sees their own buddy (not always "Sam").
+  `UPDATE task_templates SET title = replace(title, 'coffee chat with Sam', 'coffee chat with {buddy}');
+   UPDATE stages SET summary = replace(summary, 'lunch with Sam', 'lunch with {buddy}');`,
 ];
 
 export const now = () => new Date().toISOString();

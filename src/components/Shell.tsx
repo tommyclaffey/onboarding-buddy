@@ -66,6 +66,7 @@ export function Sidebar() {
           <Item to="/admin/journeys/1" icon={<Icon.journey />} label="Journeys" />
           <Item to="/admin/videos" icon={<Icon.video />} label="Video library" count={n?.videosNeedingWork || ''} />
           <Item to="/admin/apps" icon={<Icon.plug />} label="Connected apps" />
+          <Item to="/admin/settings/email" icon={<Icon.settings />} label="Email settings" />
           <Item to="/tasks" icon={<Icon.check />} label="My tasks" />
           <Item to="/inbox" icon={<Icon.inbox />} label="Inbox" count={n?.unread || ''} />
         </>

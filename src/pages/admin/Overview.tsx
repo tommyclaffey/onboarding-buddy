@@ -8,7 +8,7 @@ import { Alert, Avatar, Button, Caps, EmojiTile, Hairline, Pill, TextField, useT
 import { dayDate, longDate, todayIso } from '../../lib/format';
 import type { Person } from '../../lib/types';
 import { useApi } from '../../lib/useApi';
-import { Chevron, countWord, FEELING_WORDS, FEELINGS, humanDates, pillTone, SelectField } from './kit';
+import { Chevron, countWord, FEELING_WORDS, FEELINGS, humanDates, InviteOutcome, pillTone, SelectField, type InviteResult } from './kit';
 
 interface HireRow extends Person { startDate: string; stage: { name?: string; emoji?: string }; done: number; total: number; status: { tone: string; label: string } }
 interface Need { kind: 'i9' | 'nudge' | 'video'; title: string; body: string; hireId?: number; appKey?: string | null; action: string; due?: string }
@@ -55,7 +55,7 @@ export default function Overview() {
     }
   };
 
-  // Coming up: Day Ones plus I-9 document checks, in date order.
+  // Coming up: first days plus I-9 document checks, in date order.
   const coming = [
     ...data.upcoming.map((u) => ({ ...u, tone: 'sky' })),
     ...data.needs.filter((n) => n.kind === 'i9' && n.due && n.due >= todayIso()).map((n) => ({ date: n.due!, label: `${byId.get(n.hireId!)?.first ?? 'New hire'}’s I-9 check due`, tone: 'gold' })),
@@ -163,7 +163,7 @@ function InviteModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [done, setDone] = useState<{ id: number; tempPassword: string; first: string } | null>(null);
+  const [done, setDone] = useState<{ id: number; invite: InviteResult; first: string; email: string } | null>(null);
   const first = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -179,10 +179,10 @@ function InviteModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
     e.preventDefault();
     setSaving(true); setFormError(null);
     try {
-      const r = await api.post<{ id: number; tempPassword: string }>('/api/admin/hires', {
+      const r = await api.post<{ id: number; invite: InviteResult }>('/api/admin/hires', {
         ...f, journeyId: f.journeyId ? Number(f.journeyId) : null, managerId: f.managerId ? Number(f.managerId) : null, buddyId: f.buddyId ? Number(f.buddyId) : null,
       });
-      setDone({ ...r, first: f.name.trim().split(/\s+/)[0] });
+      setDone({ ...r, first: f.name.trim().split(/\s+/)[0], email: f.email.trim() });
       onCreated();
     } catch (err) {
       const ae = err as ApiError;
@@ -204,9 +204,7 @@ function InviteModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
         </div>
         {done ? (
           <>
-            <Alert tone="success" title={`${done.first}’s account is ready.`}>
-              Temporary password: <span className="ad-secret">{done.tempPassword}</span>. Share it privately; it’s shown once.
-            </Alert>
+            <InviteOutcome first={done.first} email={done.email} invite={done.invite} />
             <p className="t-body muted">Their whole journey is set up, and their buddy has a note to record a hello.</p>
             <div className="row gap-12">
               <Button arrow onClick={() => navigate(`/admin/hires/${done.id}`)}>Open {done.first}’s page</Button>
@@ -215,7 +213,7 @@ function InviteModal({ onClose, onCreated }: { onClose: () => void; onCreated: (
           </>
         ) : (
           <form onSubmit={submit} className="col gap-16" noValidate>
-            <p className="t-body muted">We create their account and their whole journey. You’ll get a temporary password to share.</p>
+            <p className="t-body muted">We create their account and their whole journey. Then we email them a link to set their own password.</p>
             <div className="grid" ref={first}>
               <div className="full"><TextField id="inv-name" label="Full name" value={f.name} onChange={set('name')} error={errors.name} autoComplete="off" placeholder="Rae Johnson" /></div>
               <div className="full"><TextField id="inv-email" label="Work email" type="email" value={f.email} onChange={set('email')} error={errors.email} autoComplete="off" placeholder="rae@brightside.test" /></div>

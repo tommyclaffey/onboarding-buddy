@@ -1,5 +1,5 @@
 // Today: the reference screen. One hero card (what's current, yellow), open sections split by hairlines,
-// side column with the Day One card, journey progress, your people and the feelings check.
+// side column with the Day 1 card, journey progress, your people and the feelings check.
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
@@ -54,7 +54,7 @@ export default function Today() {
       <div className="hero-card sky" style={{ padding: 22 }}>
         <div className="row between top">
           <div>
-            <Caps>Day One</Caps>
+            <Caps>Day 1</Caps>
             <p className="t-l" style={{ marginTop: 6 }}>{data.daysToGo === 0 ? 'Today!' : `${data.daysToGo} days`}</p>
             <p className="t-label muted">{longDate(data.startDate)} · 9:00 AM · remote</p>
           </div>

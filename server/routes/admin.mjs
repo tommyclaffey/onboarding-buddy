@@ -1,8 +1,7 @@
 // People Ops endpoints. Admin only, org-scoped.
 import { APPS, OWNER_LABEL, TYPE_LABEL, appInfo } from '../catalog.mjs';
 import { json, now, tx } from '../db.mjs';
-import { hashPassword } from '../auth.mjs';
-import { randomBytes } from 'node:crypto';
+import { inviteStatus, sendInvite } from '../invites.mjs';
 import { fail, int } from '../http.mjs';
 import {
   toEmbed, addMessage, addDays, daysBetween, dutyUser, hireTasks, instantiateTasks, journeyFor, person, stagesFor, todayIso, userById, videoShape,
@@ -63,7 +62,7 @@ export default function registerAdmin(router) {
       needs.push({ kind: 'video', title: `${v.title} hasn’t been recorded yet`, body: 'New hires would see an empty section.', appKey: v.app_key, action: 'Record walkthrough' });
     }
     needs.sort((a, b) => String(a.due || '9').localeCompare(String(b.due || '9')));
-    const upcoming = hires.map((h) => ({ date: h.start_date, label: `${h.name.split(' ')[0]}’s Day One` })).filter((x) => x.date >= todayIso()).slice(0, 4);
+    const upcoming = hires.map((h) => ({ date: h.start_date, label: `${h.name.split(' ')[0]}’s Day 1` })).filter((x) => x.date >= todayIso()).slice(0, 4);
     const feelings = db.prepare('SELECT value FROM feelings f WHERE org_id = ? AND id IN (SELECT MAX(id) FROM feelings WHERE org_id = ? GROUP BY hire_id)').all(admin.org_id, admin.org_id);
     const mood = feelings.length ? Math.round(feelings.reduce((a, b) => a + b.value, 0) / feelings.length) : null;
     return { hires: summaries, needs: needs.slice(0, 5), upcoming, health: { ready: summaries.filter((s) => s.status.tone === 'success').length, total: summaries.length, mood } };
@@ -84,7 +83,7 @@ export default function registerAdmin(router) {
     }
     const find = (ref) => tasks.find((t) => t.ref === ref);
     const paperwork = [
-      { label: 'I-9 · Section 1', detail: 'Filled in by the new hire', due: h.start_date, status: find('i9-1')?.status === 'done' ? 'Done' : 'Due Day One' },
+      { label: 'I-9 · Section 1', detail: 'Filled in by the new hire', due: h.start_date, status: find('i9-1')?.status === 'done' ? 'Done' : 'Due Day 1' },
       { label: 'I-9 · Section 2', detail: 'Document check, within 3 business days of starting', due: businessDaysAfter(h.start_date, 3), status: find('i9')?.status === 'done' ? 'Done' : 'Scheduled' },
       { label: 'Form W-4', detail: 'Federal tax withholding', due: find('w4')?.dueDate, status: find('w4')?.status === 'done' ? 'Done' : 'In progress' },
       { label: 'Direct deposit', detail: 'Bank details for payroll', due: find('direct_deposit')?.dueDate, status: find('direct_deposit')?.status === 'done' ? 'Done' : 'Not started' },
@@ -94,10 +93,11 @@ export default function registerAdmin(router) {
     const activity = tasks.filter((t) => t.doneAt).sort((a, b) => b.doneAt.localeCompare(a.doneAt)).slice(0, 5).map((t) => ({ at: t.doneAt, text: t.title }));
     const vids = tasks.filter((t) => t.type === 'video' || t.type === 'app');
     return {
-      hire: { ...person(h), title: h.title, team: h.team, startDate: h.start_date, manager: person(userById(db, admin.org_id, h.manager_id)), buddy: person(userById(db, admin.org_id, h.buddy_id)) },
+      hire: { ...person(h), email: h.email, title: h.title, team: h.team, startDate: h.start_date, manager: person(userById(db, admin.org_id, h.manager_id)), buddy: person(userById(db, admin.org_id, h.buddy_id)) },
       summary: hireSummary(db, h), now: tasks.find((t) => t.ownerRole === 'hire' && t.status !== 'done') || null,
       stage: { name: cur.name, done: cur.done, total: cur.total }, byOwner, paperwork, feeling, activity,
       videos: { done: vids.filter((t) => t.status === 'done').length, total: vids.length },
+      invite: inviteStatus(db, admin.org_id, h),
       checkins: tasks.filter((t) => t.data && t.data.rating).map((t) => ({ title: t.title, at: t.doneAt, rating: t.data.rating, notes: t.data.notes || '', by: t.owner })),
     };
   });
@@ -213,7 +213,7 @@ export default function registerAdmin(router) {
       if (!Array.isArray(body.tryItems)) fail(422, 'Try it now needs a list.');
       const items = body.tryItems.map((s) => String(s || '').trim()).filter(Boolean);
       if (!items.length) fail(422, 'Keep at least one Try it now item, so new hires have something to do.', { field: 'tryItems' });
-      if (items.length > 5) fail(422, 'Keep Try it now to five items or fewer.');
+      if (items.length > 5) fail(422, 'Keep Try it now to 5 items or fewer.');
       if (items.some((s) => s.length > 90)) fail(422, 'Keep each Try it now item under 90 characters.');
       sets.try_items = JSON.stringify(items);
     }
@@ -282,18 +282,27 @@ export default function registerAdmin(router) {
     if (!bud) errors.buddyId = 'Pick a buddy. A real person makes the first weeks much easier.';
     const first = Object.keys(errors)[0];
     if (first) fail(422, errors[first], { field: first, errors });
-    const temp = randomBytes(9).toString('base64url');
-    const pw = await hashPassword(temp);
+    // No password yet: the hire picks their own from the emailed invite link.
     const id = tx(db, () => {
-      const r = db.prepare("INSERT INTO users(org_id,email,name,title,team,role,start_date,manager_id,buddy_id,journey_id,password_hash,created_at) VALUES (?,?,?,?,?,'hire',?,?,?,?,?,?)")
-        .run(admin.org_id, email, name, String(body.title || '').trim() || null, String(body.team || '').trim() || mgr.team, body.startDate, mgr.id, bud.id, journey.id, pw, now());
+      const r = db.prepare("INSERT INTO users(org_id,email,name,title,team,role,start_date,manager_id,buddy_id,journey_id,password_hash,created_at) VALUES (?,?,?,?,?,'hire',?,?,?,?,NULL,?)")
+        .run(admin.org_id, email, name, String(body.title || '').trim() || null, String(body.team || '').trim() || mgr.team, body.startDate, mgr.id, bud.id, journey.id, now());
       const hid = Number(r.lastInsertRowid);
       instantiateTasks(db, userById(db, admin.org_id, hid));
-      addMessage(db, admin.org_id, hid, { from: admin.id, kind: 'system', title: `Welcome to ${db.prepare('SELECT name FROM orgs WHERE id = ?').get(admin.org_id).name}`, body: 'Everything you need before Day One, one step at a time.', link: '/welcome' });
+      addMessage(db, admin.org_id, hid, { from: admin.id, kind: 'system', title: `Welcome to ${db.prepare('SELECT name FROM orgs WHERE id = ?').get(admin.org_id).name}`, body: 'Everything you need before Day 1, one step at a time.', link: '/welcome' });
       addMessage(db, admin.org_id, bud.id, { from: admin.id, kind: 'note', title: `You’re ${name.split(' ')[0]}’s buddy`, body: `${name} starts ${body.startDate}. Record a short hello and book a coffee chat.`, link: '/tasks', action: 1 });
       return hid;
     });
-    return { id, tempPassword: temp };
+    const invite = await sendInvite(db, admin, userById(db, admin.org_id, id));
+    return { id, invite };
+  });
+
+  // Send a fresh invite link (the old one stops working).
+  router.post('/api/admin/hires/:id/invite', async ({ db, user, params }) => {
+    const admin = needAdmin(user);
+    const h = userById(db, admin.org_id, int(params.id, 'person'));
+    if (!h || h.role !== 'hire') fail(404, 'That person isn’t a new hire here.');
+    if (h.password_hash) fail(409, `${h.name.split(' ')[0]} already set up their account. They can sign in with their email.`);
+    return { invite: await sendInvite(db, admin, h) };
   });
 
   // Attach a real video (YouTube, Loom or Vimeo link) to an existing video slot. Publishes it.

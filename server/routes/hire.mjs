@@ -255,7 +255,7 @@ export default function registerHire(router) {
   router.post('/api/feeling', ({ db, user, body }) => {
     const hire = needHire(user);
     const v = Number(body.value);
-    if (!Number.isInteger(v) || v < 1 || v > 5) fail(422, 'Pick one of the five faces.');
+    if (!Number.isInteger(v) || v < 1 || v > 5) fail(422, 'Pick 1 of the 5 faces.');
     db.prepare('INSERT INTO feelings(org_id, hire_id, value, created_at) VALUES (?,?,?,?)').run(hire.org_id, hire.id, v, now());
     return { ok: true };
   });
