@@ -1,0 +1,24 @@
+/* Demo walkthrough card (static portfolio demo only). Sits above the Ask Buddy bar. */
+.tour-card { position: fixed; right: 24px; bottom: 104px; width: 340px; z-index: 45; background: var(--bg-surface);
+  border: 1px solid var(--border-default); border-radius: 18px; box-shadow: var(--shadow-soft), 0 18px 40px rgba(26, 23, 20, .12);
+  padding: 16px 18px 16px; display: flex; flex-direction: column; gap: 8px; }
+.tour-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tour-x { width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent;
+  color: var(--text-secondary); font: 400 20px/1 var(--font-body); cursor: pointer; }
+.tour-x:hover { background: var(--bg-subtle); color: var(--text-primary); }
+.tour-title { font: 400 22px/1.2 var(--font-display); margin: 2px 0 0; color: var(--text-primary); }
+.tour-body { font: 400 15px/1.5 var(--font-body); margin: 0; color: var(--text-secondary); }
+.tour-dots { display: flex; gap: 6px; margin-top: 4px; }
+.tour-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border-default); }
+.tour-dots span.on { background: var(--bg-primary); width: 18px; border-radius: 3px; }
+.tour-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.tour-pill { position: fixed; right: 24px; bottom: 104px; z-index: 45; display: inline-flex; align-items: center; justify-content: center;
+  padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border-default); background: var(--bg-surface);
+  box-shadow: var(--shadow-soft); font: 600 14px/1 var(--font-body); color: var(--text-primary); cursor: pointer; }
+.tour-pill:hover { background: var(--bg-subtle); }
+@media (max-width: 900px) {
+  .tour-card { left: 12px; right: 12px; width: auto; bottom: 76px; padding: 14px 16px; }
+  .tour-title { font-size: 20px; }
+  .tour-body { font-size: 14px; }
+  .tour-pill { right: 12px; bottom: 76px; }
+}

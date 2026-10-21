@@ -1,6 +1,7 @@
 // Core components, mirroring the Figma component set: Button, Checkbox, Choice, TextField, Avatar,
 // Smiley, LogoTile, EmojiTile, Alert, Toast, EmptyState, Pill, Caps, Hairline.
 import { createContext, useCallback, useContext, useState, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
+import { asset } from '../lib/asset';
 import type { AppInfo, Person } from '../lib/types';
 
 export const Arrow = ({ size = 15 }: { size?: number }) => (
@@ -77,12 +78,12 @@ export function Smiley({ size = 28 }: { size?: number }) {
 export function LogoTile({ app, size = 48, radius }: { app: Pick<AppInfo, 'key' | 'name'>; size?: number; radius?: number }) {
   return (
     <span className="logo-tile" style={{ width: size, height: size, borderRadius: radius ?? Math.round(size * 0.28) }}>
-      <img src={`/logos/${app.key}.svg`} alt={`${app.name} logo`} style={{ width: size * 0.58, height: size * 0.58 }} />
+      <img src={asset(`/logos/${app.key}.svg`)} alt={`${app.name} logo`} style={{ width: size * 0.58, height: size * 0.58 }} />
     </span>
   );
 }
 export const Logo = ({ app, size = 16 }: { app: Pick<AppInfo, 'key' | 'name'>; size?: number }) => (
-  <img src={`/logos/${app.key}.svg`} alt={`${app.name} logo`} width={size} height={size} style={{ width: size, height: size, objectFit: 'contain', flex: 'none' }} />
+  <img src={asset(`/logos/${app.key}.svg`)} alt={`${app.name} logo`} width={size} height={size} style={{ width: size, height: size, objectFit: 'contain', flex: 'none' }} />
 );
 
 export function EmojiTile({ emoji, tint = 'sky', size = 36 }: { emoji: string; tint?: string; size?: number }) {

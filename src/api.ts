@@ -38,6 +38,14 @@ function setEmbedToken(t: string | null) {
 }
 
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
+  // Static portfolio demo (GitHub Pages): the server runs in the browser. See src/demo/backend.ts.
+  if (import.meta.env.VITE_STATIC_DEMO === '1') {
+    const { demoRequest } = await import('./demo/backend');
+    const r = await demoRequest(method, url, body);
+    if (r.status >= 400) throw new ApiError(r.status, r.data.error || 'Something went wrong. Try again.', r.data);
+    if (method !== 'GET') window.dispatchEvent(new Event('ob:data'));
+    return r.data as T;
+  }
   const headers: Record<string, string> = method === 'GET' ? {} : { 'Content-Type': 'application/json', 'X-OB': '1' };
   if (EMBEDDED) {
     headers['X-OB-Embed'] = '1';

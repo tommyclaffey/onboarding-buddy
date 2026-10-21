@@ -1,5 +1,6 @@
 // Routes. Each role lands on its own home (auth.homeFor). Hire screens show the Ask Buddy bar.
 import type { ReactNode } from 'react';
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { homeFor, useAuth } from './auth';
 import { AskBuddy, Sidebar } from './components/Shell';
@@ -41,11 +42,16 @@ function Guard({ roles, children, ask }: { roles?: Role[]; children: ReactNode; 
   );
 }
 
+// Guided walkthrough, only in the static portfolio demo build (VITE_STATIC_DEMO=1).
+const DemoTour = import.meta.env.VITE_STATIC_DEMO === '1' ? lazy(() => import('./demo/DemoTour')) : null;
+
 export default function App() {
   const { user, ready } = useAuth();
   const H: Role[] = ['hire'];
   const A: Role[] = ['admin'];
   return (
+    <>
+    {DemoTour && user && <Suspense fallback={null}><DemoTour /></Suspense>}
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/demo" element={<Login />} />
@@ -72,5 +78,6 @@ export default function App() {
       <Route path="/admin/settings/email" element={<Guard roles={A}><EmailSettings /></Guard>} />
       <Route path="*" element={ready ? <Navigate to={homeFor(user)} replace /> : <div className="loading">Loading…</div>} />
     </Routes>
+    </>
   );
 }

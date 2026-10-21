@@ -1,6 +1,7 @@
 // Video player: one spot, three states (Before play → Playing → Finished), matching the Figma "App video states".
 // People videos use the presenter's still photo. App walkthroughs use a logo title card (never a photo).
 import { useState } from 'react';
+import { asset } from '../lib/asset';
 import type { AppInfo, Video } from '../lib/types';
 import { mmss } from '../lib/format';
 import { Avatar, Button, LogoTile, PlayIcon } from './ui';
@@ -68,7 +69,7 @@ export function VideoPlayer({ video, app, index, total, kicker, onFinish, onNext
             <>
               <div className="chrome">
                 <span className="dot" /><span className="dot" /><span className="dot" />
-                <span className="tab"><img src={`/logos/${app.key}.svg`} alt="" width={14} height={14} />{app.name}</span>
+                <span className="tab"><img src={asset(`/logos/${app.key}.svg`)} alt="" width={14} height={14} />{app.name}</span>
                 <span className="rec"><span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--text-danger)' }} />Screen recording</span>
               </div>
               <div style={{ display: 'flex', height: 'calc(100% - 34px)' }}>

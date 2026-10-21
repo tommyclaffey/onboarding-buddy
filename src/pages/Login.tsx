@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { asset } from '../lib/asset';
 import { api, EMBEDDED } from '../api';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { homeFor, useAuth } from '../auth';
@@ -7,7 +8,7 @@ import { Alert, Avatar, Button, Smiley, TextField } from '../components/ui';
 // One demo account: Hana, a new hire, using it the way she would on the job.
 // Inside the portfolio's embedded preview (and at /demo) she's signed in automatically.
 const DEMO = [
-  { email: 'hana@brightside.test', name: 'Hana Liu', role: 'New hire at Brightside', photo: '/photos/hana.jpg' },
+  { email: 'hana@brightside.test', name: 'Hana Liu', role: 'New hire at Brightside', photo: asset('/photos/hana.jpg') },
 ];
 const AUTO_KEY = 'ob_demo_auto';
 
@@ -70,7 +71,7 @@ export default function Login() {
         </div>}
       </div>
       <div className="art-side" aria-hidden>
-        <img src="/photos/video-welcome.jpg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={asset('/photos/video-welcome.jpg')} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(16,14,13,0) 30%, rgba(16,14,13,.62) 62%, rgba(16,14,13,.9) 100%)' }} />
         <div style={{ position: 'relative', color: '#fff', maxWidth: 440 }}>
           <p className="t-m" style={{ color: '#fff' }}>“We’re so glad you said yes. Here’s what the next few weeks look like.”</p>

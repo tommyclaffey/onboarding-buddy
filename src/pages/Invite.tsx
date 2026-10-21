@@ -1,5 +1,6 @@
 // The invite link a new hire gets by email: shows who it's for, they pick a password, and they're in.
 import { useEffect, useState, type FormEvent } from 'react';
+import { asset } from '../lib/asset';
 import { Link, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api';
 import { Alert, Button, Smiley, TextField } from '../components/ui';
@@ -53,7 +54,7 @@ export default function Invite() {
         )}
       </div>
       <div className="art-side" aria-hidden>
-        <img src="/photos/video-welcome.jpg" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={asset('/photos/video-welcome.jpg')} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(16,14,13,0) 30%, rgba(16,14,13,.62) 62%, rgba(16,14,13,.9) 100%)' }} />
         <div style={{ position: 'relative', color: '#fff', maxWidth: 440 }}>
           <p className="t-m" style={{ color: '#fff' }}>“We’re so glad you said yes. Here’s what the next few weeks look like.”</p>

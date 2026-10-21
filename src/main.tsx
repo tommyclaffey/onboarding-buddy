@@ -8,7 +8,7 @@ import './styles/app.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '') || undefined}>
       <AuthProvider>
         <ToastProvider>
           <App />
