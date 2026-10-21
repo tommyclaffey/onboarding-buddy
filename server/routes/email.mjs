@@ -143,7 +143,7 @@ export default function registerEmail(router) {
     return { first: u.name.split(' ')[0], name: u.name, email: u.email, org: org.name };
   });
 
-  router.post('/api/invite/:token', async ({ db, params, body, setCookie, secure }) => {
+  router.post('/api/invite/:token', async ({ db, params, body, req, setCookie, secure }) => {
     const inv = liveInvite(db, params.token);
     if (!inv) fail(404, 'This invite link has expired or was already used. Ask People Ops to send a new one.');
     const pw = String(body.password || '');
@@ -154,7 +154,8 @@ export default function registerEmail(router) {
       db.prepare('UPDATE invites SET used_at = ? WHERE token_hash = ?').run(now(), inv.token_hash);
       db.prepare('DELETE FROM invites WHERE user_id = ? AND used_at IS NULL').run(inv.user_id);
     });
-    setCookie(sessionCookie(createSession(db, inv.user_id), { secure }));
-    return { user: publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(inv.user_id)) };
+    const session = createSession(db, inv.user_id);
+    setCookie(sessionCookie(session, { secure }));
+    return { user: publicUser(db.prepare('SELECT * FROM users WHERE id = ?').get(inv.user_id)), ...(req.headers['x-ob-embed'] === '1' ? { sessionToken: session } : {}) };
   });
 }

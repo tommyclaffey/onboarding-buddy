@@ -23,8 +23,10 @@ export default function registerAuth(router) {
     }
     limiter.reset(key);
     db.prepare('UPDATE users SET last_seen_at = ? WHERE id = ?').run(now(), user.id);
-    setCookie(sessionCookie(createSession(db, user.id), { secure }));
-    return { user: publicUser(user) };
+    const session = createSession(db, user.id);
+    setCookie(sessionCookie(session, { secure }));
+    // Embedded clients can't keep the cookie, so they get the token to hold for this tab.
+    return { user: publicUser(user), ...(req.headers['x-ob-embed'] === '1' ? { sessionToken: session } : {}) };
   });
 
   router.post('/api/auth/logout', ({ db, token, setCookie, secure }) => {

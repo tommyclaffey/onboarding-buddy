@@ -38,7 +38,11 @@ export function startServer({ port = 0, db = openDb(defaultDbPath()), dist = pat
       const match = router.match(req.method, url.pathname);
       if (!match) throw new HttpError(404, 'Not found.');
       if (WRITES.has(req.method) && req.headers['x-ob'] !== '1') throw new HttpError(403, 'Missing request header.');
-      const token = parseCookies(req.headers.cookie)[SESSION_COOKIE];
+      // Inside another site's iframe (e.g. the portfolio's phone preview) browsers block this
+      // app's cookie, so the client sends the session as a bearer token with X-OB-Embed instead.
+      const embed = req.headers['x-ob-embed'] === '1';
+      const bearer = embed ? (/^Bearer\s+(\S+)$/.exec(req.headers.authorization || '') || [])[1] : undefined;
+      const token = bearer || parseCookies(req.headers.cookie)[SESSION_COOKIE];
       const user = sessionUser(db, token);
       const body = WRITES.has(req.method) ? await readJson(req) : {};
       const out = await match.handler({ req, res, db, user, token, params: match.params, body, query: url.searchParams, secure, setCookie: (c) => cookies.push(c) });
