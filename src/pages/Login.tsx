@@ -1,27 +1,25 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { api, EMBEDDED } from '../api';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { homeFor, useAuth } from '../auth';
 import { Alert, Avatar, Button, Smiley, TextField } from '../components/ui';
 
+// One demo account: Hana, a new hire, using it the way she would on the job.
+// Inside the portfolio's embedded preview (and at /demo) she's signed in automatically.
 const DEMO = [
-  { email: 'hana@brightside.test', name: 'Hana Liu', role: 'New hire', photo: '/photos/hana.jpg' },
-  { email: 'priya@brightside.test', name: 'Priya Rao', role: 'People Ops (admin)', photo: '/photos/priya.jpg' },
-  { email: 'jordan@brightside.test', name: 'Jordan Reyes', role: 'Manager', photo: '/photos/jordan.jpg' },
-  { email: 'dev@brightside.test', name: 'Dev Okafor', role: 'IT', photo: '/photos/dev.jpg' },
-  { email: 'sam@brightside.test', name: 'Sam Patel', role: 'Buddy', photo: '/photos/sam.jpg' },
+  { email: 'hana@brightside.test', name: 'Hana Liu', role: 'New hire at Brightside', photo: '/photos/hana.jpg' },
 ];
+const AUTO_KEY = 'ob_demo_auto';
 
 export default function Login() {
   const { user, ready, login } = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [demo, setDemo] = useState(false);
-  useEffect(() => { api.get<{ demo: boolean }>('/api/config').then((c) => setDemo(c.demo)).catch(() => {}); }, []);
-  if (ready && user) return <Navigate to={homeFor(user)} replace />;
+  const [demo, setDemo] = useState<boolean | null>(null);
   const submit = async (e?: React.FormEvent, as?: string) => {
     e?.preventDefault();
     setBusy(true);
@@ -35,6 +33,18 @@ export default function Login() {
       setBusy(false);
     }
   };
+  useEffect(() => { api.get<{ demo: boolean }>('/api/config').then((c) => setDemo(c.demo)).catch(() => setDemo(false)); }, []);
+  // Auto sign-in: always at /demo; once per tab when embedded (so signing out isn't undone).
+  const [wantAuto] = useState(() => pathname === '/demo' || (EMBEDDED && (() => { try { return !sessionStorage.getItem(AUTO_KEY); } catch { return true; } })()));
+  const [autoTried, setAutoTried] = useState(false);
+  useEffect(() => {
+    if (!demo || !ready || user || autoTried || !wantAuto) return;
+    setAutoTried(true);
+    try { sessionStorage.setItem(AUTO_KEY, '1'); } catch { /* storage blocked */ }
+    submit(undefined, DEMO[0].email);
+  }, [demo, ready, user, autoTried, wantAuto]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (ready && user) return <Navigate to={homeFor(user)} replace />;
+  if (wantAuto && !error && (!ready || demo === null || (demo && (busy || !autoTried)))) return <div className="loading">Signing you in as Hana…</div>;
   return (
     <div className="auth">
       <div className="form-side">
@@ -48,7 +58,7 @@ export default function Login() {
           <div><Button arrow loading={busy} type="submit">Sign in</Button></div>
         </form>
         {demo && <div className="col gap-8 mt-16">
-          <p className="t-caps">Demo · sign in as</p>
+          <p className="t-caps">Demo · try it as a new hire</p>
           <div className="col gap-4">
             {DEMO.map((d) => (
               <button key={d.email} className="task" style={{ width: '100%', margin: 0 }} onClick={() => submit(undefined, d.email)}>

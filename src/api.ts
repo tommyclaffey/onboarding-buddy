@@ -11,7 +11,7 @@ export class ApiError extends Error {
 
 // Inside another site's iframe (the portfolio's phone preview), browsers block this app's
 // session cookie. There the session is kept for this tab and sent as a bearer token instead.
-const EMBEDDED = (() => {
+export const EMBEDDED = (() => {
   try {
     return typeof window !== 'undefined' && window.self !== window.top;
   } catch {

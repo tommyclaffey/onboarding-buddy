@@ -48,6 +48,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/demo" element={<Login />} />
       <Route path="/invite/:token" element={<Invite />} />
       <Route path="/welcome" element={<Guard roles={H} ask><Welcome /></Guard>} />
       <Route path="/today" element={<Guard roles={H} ask><Today /></Guard>} />
