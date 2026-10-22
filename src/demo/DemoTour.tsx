@@ -37,6 +37,16 @@ export default function DemoTour() {
     }
   }, [s]);
 
+  // The DEMO pill beside the company name restarts the walkthrough.
+  useEffect(() => {
+    const restart = () => {
+      setS({ step: 0, open: true });
+      navigate(STEPS[0].path);
+    };
+    window.addEventListener('ob:tour', restart);
+    return () => window.removeEventListener('ob:tour', restart);
+  }, [navigate]);
+
   // Sit just below whichever top bar is showing (desktop page top bar or the phone header).
   useEffect(() => {
     const place = () => {

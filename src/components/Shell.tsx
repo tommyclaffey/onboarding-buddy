@@ -1,5 +1,6 @@
 // App shell: role-aware sidebar, the page panel (breadcrumb, header, body + aside), and the Ask Buddy bar.
 import { useEffect, useState, type ReactNode } from 'react';
+import { DemoTag } from './DemoTag';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth';
 import { useApi } from '../lib/useApi';
@@ -36,7 +37,7 @@ export function Sidebar() {
   return (
     <>
     <header className="mobile-bar">
-      <div className="row gap-10"><Smiley size={28} /><b>Onboarding Buddy</b></div>
+      <div className="row gap-10"><Smiley size={28} /><b>Onboarding Buddy</b><DemoTag /></div>
       <button className="menu-btn" aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open} onClick={() => setOpen(!open)}>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden>{open ? <path d="M5 5l10 10M15 5 5 15" /> : <path d="M3 6h14M3 10h14M3 14h14" />}</svg>
       </button>
@@ -45,7 +46,7 @@ export function Sidebar() {
     <aside className={`sidebar ${open ? 'open' : ''}`} aria-label="Main">
       <div className="workspace">
         <Smiley size={30} />
-        <div><b>Onboarding Buddy</b><small>{org?.name}{user.role === 'admin' ? ' · Admin' : ''}</small></div>
+        <div><b>Onboarding Buddy</b><small className="ws-org">{org?.name}{user.role === 'admin' ? ' · Admin' : ''}<DemoTag /></small></div>
       </div>
       {user.role === 'hire' && (
         <>
