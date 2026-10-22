@@ -114,6 +114,8 @@ export function Page({ crumbs, kicker, title, lede, aside, children, admin, glow
             </span>
           ))}
         </nav>
+        {/* Right end of the top bar: the portfolio demo puts its walkthrough button here. */}
+        <div id="topbar-slot" className="topbar-slot" />
       </div>
       <header className="page-head">
         {kicker && <p className="t-caps">{kicker}</p>}

@@ -1,6 +1,7 @@
 // Guided walkthrough for the static portfolio demo: 7 short stops through Hana's first week.
 // Shown only in the GitHub Pages build (VITE_STATIC_DEMO=1). State lives in sessionStorage.
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui';
 import './demo-tour.css';
@@ -27,6 +28,7 @@ const load = (): TourState => {
 
 export default function DemoTour() {
   const [s, setS] = useState<TourState>(load);
+  const [slot, setSlot] = useState<HTMLElement | null>(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   useEffect(() => {
@@ -36,6 +38,14 @@ export default function DemoTour() {
       /* storage blocked: the tour still works for this page view */
     }
   }, [s]);
+
+  // The closed-state button lives inside the top bar (Shell's #topbar-slot), so it never sits over content.
+  useEffect(() => {
+    const find = () => setSlot(document.getElementById('topbar-slot'));
+    find();
+    const t = setTimeout(find, 300);
+    return () => clearTimeout(t);
+  }, [pathname]);
 
   // The DEMO pill beside the company name restarts the walkthrough.
   useEffect(() => {
@@ -66,11 +76,12 @@ export default function DemoTour() {
   };
 
   if (!s.open) {
-    return (
+    const pill = (
       <button className="tour-pill" onClick={() => go(0)}>
         Demo walkthrough
       </button>
     );
+    return slot ? createPortal(pill, slot) : null;
   }
   const st = STEPS[s.step];
   const last = s.step === STEPS.length - 1;

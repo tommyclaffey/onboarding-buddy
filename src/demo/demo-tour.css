@@ -13,13 +13,12 @@
 .tour-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border-default); }
 .tour-dots span.on { background: var(--bg-primary); width: 18px; border-radius: 3px; }
 .tour-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
-.tour-pill { position: fixed; right: 32px; top: var(--tour-top, 76px); z-index: 45; display: inline-flex; align-items: center; justify-content: center;
-  padding: 9px 16px; border-radius: 999px; border: 1px solid var(--border-default); background: var(--bg-surface);
-  box-shadow: var(--shadow-soft); font: 600 14px/1 var(--font-body); color: var(--text-primary); cursor: pointer; }
+.tour-pill { display: inline-flex; align-items: center; justify-content: center; height: 28px; padding: 1.5px 12px 0; margin: -5px 0;
+  border-radius: 999px; border: 1px solid var(--border-default); background: var(--bg-surface); box-shadow: var(--shadow-soft);
+  font: 600 12.5px/1 var(--font-body); color: var(--text-primary); white-space: nowrap; cursor: pointer; }
 .tour-pill:hover { background: var(--bg-subtle); }
 @media (max-width: 900px) {
   .tour-card { left: 12px; right: 12px; width: auto; padding: 14px 16px; }
   .tour-title { font-size: 20px; }
   .tour-body { font-size: 14px; }
-  .tour-pill { right: 12px; }
 }
