@@ -37,6 +37,19 @@ export default function DemoTour() {
     }
   }, [s]);
 
+  // Sit just below whichever top bar is showing (desktop page top bar or the phone header).
+  useEffect(() => {
+    const place = () => {
+      const bars = [...document.querySelectorAll<HTMLElement>('.mobile-bar, .topbar')];
+      const bottom = bars.map((b) => b.getBoundingClientRect()).filter((r) => r.height > 0 && r.top < 140).reduce((m, r) => Math.max(m, r.bottom), 0);
+      document.documentElement.style.setProperty('--tour-top', `${Math.round((bottom || 64) + 12)}px`);
+    };
+    place();
+    const t = setTimeout(place, 400);
+    window.addEventListener('resize', place);
+    return () => { clearTimeout(t); window.removeEventListener('resize', place); };
+  }, [pathname]);
+
   const go = (step: number) => {
     setS({ step, open: true });
     if (pathname !== STEPS[step].path) navigate(STEPS[step].path);
