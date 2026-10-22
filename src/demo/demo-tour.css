@@ -1,6 +1,7 @@
 /* Demo walkthrough (static portfolio demo only). Open: a card in the top-right corner of the page,
    positioned and sized by DemoTour.tsx so it never reaches the card below. Closed: a button in the top bar. */
-.tour-card { position: absolute; z-index: 30; box-sizing: border-box; background: var(--bg-surface);
+.tour-card { position: absolute; z-index: 30; box-sizing: border-box;
+  transition: top .28s cubic-bezier(.2,.7,.2,1), left .28s cubic-bezier(.2,.7,.2,1), width .28s cubic-bezier(.2,.7,.2,1); background: var(--bg-surface);
   border: 1px solid var(--border-default); border-radius: 18px; box-shadow: var(--shadow-soft), 0 14px 32px rgba(26, 23, 20, .10);
   padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
 .tour-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -26,3 +27,10 @@
   border-radius: 999px; border: 1px solid var(--border-default); background: var(--bg-surface); box-shadow: var(--shadow-soft);
   font: 600 12.5px/1 var(--font-body); color: var(--text-primary); white-space: nowrap; cursor: pointer; }
 .tour-pill:hover { background: var(--bg-subtle); }
+/* Measuring copy: same box model, never seen. */
+.tour-measure { position: absolute !important; left: -10000px !important; top: 0 !important; visibility: hidden; pointer-events: none; transition: none; }
+.tour-min .tour-body { display: none; }
+/* New words fade in; the card itself stays. */
+.tour-words { display: flex; flex-direction: column; gap: inherit; animation: tour-in .22s ease-out; }
+@keyframes tour-in { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tour-card { transition: none; } .tour-words { animation: none; } }
