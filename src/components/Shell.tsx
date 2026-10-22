@@ -117,6 +117,8 @@ export function Page({ crumbs, kicker, title, lede, aside, children, admin, glow
         {/* Right end of the top bar: the portfolio demo puts its walkthrough button here. */}
         <div id="topbar-slot" className="topbar-slot" />
       </div>
+      {/* The portfolio demo's walkthrough strip goes here, in the page flow, so it never covers content. */}
+      <div id="tour-strip-slot" className="tour-strip-slot" />
       <header className="page-head">
         {kicker && <p className="t-caps">{kicker}</p>}
         <h1 className="t-hero">{title}</h1>

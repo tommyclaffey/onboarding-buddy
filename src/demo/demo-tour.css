@@ -1,24 +1,28 @@
-/* Demo walkthrough card (static portfolio demo only). Top-right, just below the app's top bar
-   (--tour-top is set from the measured bar in DemoTour.tsx). */
-.tour-card { position: fixed; right: 32px; top: var(--tour-top, 76px); width: 340px; z-index: 45; background: var(--bg-surface);
-  border: 1px solid var(--border-default); border-radius: 18px; box-shadow: var(--shadow-soft), 0 18px 40px rgba(26, 23, 20, .12);
-  padding: 16px 18px 16px; display: flex; flex-direction: column; gap: 8px; }
-.tour-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.tour-x { width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent;
-  color: var(--text-secondary); font: 400 20px/1 var(--font-body); cursor: pointer; }
-.tour-x:hover { background: var(--bg-subtle); color: var(--text-primary); }
-.tour-title { font: 400 22px/1.2 var(--font-display); margin: 2px 0 0; color: var(--text-primary); }
-.tour-body { font: 400 15px/1.5 var(--font-body); margin: 0; color: var(--text-secondary); }
-.tour-dots { display: flex; gap: 6px; margin-top: 4px; }
+/* Demo walkthrough (static portfolio demo only).
+   Open: a strip in the page flow under the top bar, so the page moves down and nothing is covered.
+   Closed: a small button at the right end of the top bar. */
+.tour-strip-slot:empty { display: none; }
+.tour-strip { position: relative; margin: 8px 72px 0; padding: 16px 52px 16px 20px; display: flex; align-items: center; gap: 28px;
+  background: var(--bg-surface); border: 1px solid var(--border-default); border-radius: 18px; box-shadow: var(--shadow-soft); }
+.tour-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.tour-title { font: 400 21px/1.2 var(--font-display); margin: 2px 0 0; color: var(--text-primary); }
+.tour-body { font: 400 15px/1.5 var(--font-body); margin: 0; color: var(--text-secondary); max-width: 720px; }
+.tour-side { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; flex: none; }
+.tour-dots { display: flex; gap: 6px; }
 .tour-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--border-default); }
 .tour-dots span.on { background: var(--bg-primary); width: 18px; border-radius: 3px; }
-.tour-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.tour-actions { display: flex; gap: 8px; }
+.tour-x { position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: transparent; color: var(--text-secondary); font: 400 20px/1 var(--font-body); cursor: pointer; }
+.tour-x:hover { background: var(--bg-subtle); color: var(--text-primary); }
 .tour-pill { display: inline-flex; align-items: center; justify-content: center; height: 28px; padding: 1.5px 12px 0; margin: -5px 0;
   border-radius: 999px; border: 1px solid var(--border-default); background: var(--bg-surface); box-shadow: var(--shadow-soft);
   font: 600 12.5px/1 var(--font-body); color: var(--text-primary); white-space: nowrap; cursor: pointer; }
 .tour-pill:hover { background: var(--bg-subtle); }
+@media (max-width: 1100px) { .tour-strip { margin: 8px 32px 0; } }
 @media (max-width: 900px) {
-  .tour-card { left: 12px; right: 12px; width: auto; padding: 14px 16px; }
-  .tour-title { font-size: 20px; }
+  .tour-strip { margin: 4px 20px 0; padding: 14px 44px 14px 16px; flex-direction: column; align-items: stretch; gap: 12px; }
+  .tour-title { font-size: 19px; }
   .tour-body { font-size: 14px; }
+  .tour-side { flex-direction: row; align-items: center; justify-content: space-between; }
 }

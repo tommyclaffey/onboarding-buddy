@@ -7,13 +7,13 @@ import { Button } from '../components/ui';
 import './demo-tour.css';
 
 const STEPS = [
-  { path: '/today', title: 'You’re Hana, starting at Brightside', body: 'Today shows only what’s next, so a new hire never faces a wall of tasks. Start with the W-4: tick a step and watch it save.' },
+  { path: '/today', title: 'You’re Hana, starting at Brightside', body: 'Today shows only what’s next, so a new hire never faces a wall of tasks. Start with the W‑4: tick a step and watch it save.' },
   { path: '/journey', title: 'Your first 90 days', body: 'Five stages from “Hello!” to graduation. Each opens with a short video from the team, and later stages unlock as you go.' },
-  { path: '/paperwork', title: 'Paperwork in minutes', body: 'W-4, direct deposit and the handbook, with plain-English help and a typed-name signature. Private to Hana and HR.' },
+  { path: '/paperwork', title: 'Paperwork in minutes', body: 'W‑4, direct deposit and the handbook, with plain-English help and a typed-name signature. Private to Hana and HR.' },
   { path: '/training', title: 'Training on video', body: 'Short lessons, each with a quick check at the end. Wrong answers explain why.' },
   { path: '/tools', title: 'Gear and logins', body: 'The laptop’s shipping status, who’s handling it, and which accounts are ready on Day 1.' },
   { path: '/people', title: 'The people in your corner', body: 'Hana’s manager, her buddy Sam and People Ops, each one message away.' },
-  { path: '/today', title: 'Stuck? Ask Buddy', body: 'The bar at the bottom answers questions from the company’s own handbook. Try “What’s a W-4?”. That’s the tour: keep exploring.' },
+  { path: '/today', title: 'Stuck? Ask Buddy', body: 'The bar at the bottom answers questions from the company’s own handbook. Try “What’s a W‑4?”. That’s the tour: keep exploring.' },
 ];
 const KEY = 'ob_demo_tour';
 
@@ -29,6 +29,7 @@ const load = (): TourState => {
 export default function DemoTour() {
   const [s, setS] = useState<TourState>(load);
   const [slot, setSlot] = useState<HTMLElement | null>(null);
+  const [strip, setStrip] = useState<HTMLElement | null>(null);
   const navigate = useNavigate();
   const { pathname } = useLocation();
   useEffect(() => {
@@ -39,9 +40,13 @@ export default function DemoTour() {
     }
   }, [s]);
 
-  // The closed-state button lives inside the top bar (Shell's #topbar-slot), so it never sits over content.
+  // Closed: a small button at the right end of the top bar (#topbar-slot).
+  // Open: a strip in the page flow just under the top bar (#tour-strip-slot). Neither ever covers content.
   useEffect(() => {
-    const find = () => setSlot(document.getElementById('topbar-slot'));
+    const find = () => {
+      setSlot(document.getElementById('topbar-slot'));
+      setStrip(document.getElementById('tour-strip-slot'));
+    };
     find();
     const t = setTimeout(find, 300);
     return () => clearTimeout(t);
@@ -56,19 +61,6 @@ export default function DemoTour() {
     window.addEventListener('ob:tour', restart);
     return () => window.removeEventListener('ob:tour', restart);
   }, [navigate]);
-
-  // Sit just below whichever top bar is showing (desktop page top bar or the phone header).
-  useEffect(() => {
-    const place = () => {
-      const bars = [...document.querySelectorAll<HTMLElement>('.mobile-bar, .topbar')];
-      const bottom = bars.map((b) => b.getBoundingClientRect()).filter((r) => r.height > 0 && r.top < 140).reduce((m, r) => Math.max(m, r.bottom), 0);
-      document.documentElement.style.setProperty('--tour-top', `${Math.round((bottom || 64) + 12)}px`);
-    };
-    place();
-    const t = setTimeout(place, 400);
-    window.addEventListener('resize', place);
-    return () => { clearTimeout(t); window.removeEventListener('resize', place); };
-  }, [pathname]);
 
   const go = (step: number) => {
     setS({ step, open: true });
@@ -85,23 +77,26 @@ export default function DemoTour() {
   }
   const st = STEPS[s.step];
   const last = s.step === STEPS.length - 1;
-  return (
-    <aside className="tour-card" role="dialog" aria-label="Demo walkthrough">
-      <div className="tour-top">
+  const card = (
+    <section className="tour-strip" aria-label="Demo walkthrough">
+      <div className="tour-text">
         <span className="t-caps">Demo walkthrough · {s.step + 1} of {STEPS.length}</span>
-        <button className="tour-x" aria-label="Close the walkthrough" onClick={() => setS({ ...s, open: false })}>×</button>
+        <h2 className="tour-title">{st.title}</h2>
+        <p className="tour-body">{st.body}</p>
       </div>
-      <h2 className="tour-title">{st.title}</h2>
-      <p className="tour-body">{st.body}</p>
-      <div className="tour-dots" aria-hidden>{STEPS.map((_, i) => <span key={i} className={i === s.step ? 'on' : ''} />)}</div>
-      <div className="tour-actions">
-        {s.step > 0 && <Button variant="outline" size="sm" onClick={() => go(s.step - 1)}>Back</Button>}
-        {last ? (
-          <Button size="sm" onClick={() => setS({ step: 0, open: false })}>Explore on my own</Button>
-        ) : (
-          <Button size="sm" arrow onClick={() => go(s.step + 1)}>Next</Button>
-        )}
+      <div className="tour-side">
+        <div className="tour-dots" aria-hidden>{STEPS.map((_, i) => <span key={i} className={i === s.step ? 'on' : ''} />)}</div>
+        <div className="tour-actions">
+          {s.step > 0 && <Button variant="outline" size="sm" onClick={() => go(s.step - 1)}>Back</Button>}
+          {last ? (
+            <Button size="sm" onClick={() => setS({ step: 0, open: false })}>Explore on my own</Button>
+          ) : (
+            <Button size="sm" arrow onClick={() => go(s.step + 1)}>Next</Button>
+          )}
+        </div>
       </div>
-    </aside>
+      <button className="tour-x" aria-label="Close the walkthrough" onClick={() => setS({ ...s, open: false })}>×</button>
+    </section>
   );
+  return strip ? createPortal(card, strip) : null;
 }
